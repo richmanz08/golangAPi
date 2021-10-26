@@ -1,7 +1,8 @@
 package main
 
 import (
-	"connect-db/handle"
+	L "api-webapp/func"
+	"api-webapp/handle"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -9,8 +10,6 @@ import (
 	"math/rand"
 	"net/http"
 	"strconv"
-
-	L "connect-db/func"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
