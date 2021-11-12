@@ -2,6 +2,7 @@ package main
 
 import (
 	L "api-webapp/Books"
+	J "api-webapp/Login"
 	M "api-webapp/Member"
 	"database/sql"
 	"fmt"
@@ -29,7 +30,8 @@ func main() {
 	defer db.Close()
 	// Pass Variable to member.go
 	M.DB = db
-
+	//Login Authority Project Virify by jwt token
+	r.HandleFunc("/api/login", J.Authorityfunc).Methods("POST")
 	// My database api
 	r.HandleFunc("/api/memberall", M.GetallMember).Methods("GET")
 	// Book api
