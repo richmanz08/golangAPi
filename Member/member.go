@@ -2,8 +2,9 @@ package member
 
 import (
 	"database/sql"
-	"encoding/json"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 type User struct {
@@ -16,7 +17,7 @@ type User struct {
 
 var DB *sql.DB
 
-func GetallMember(w http.ResponseWriter, r *http.Request) {
+func GetallMember(c *gin.Context) {
 	// Query  data on table
 	var AllUser []User
 	datamember, err_table_user := DB.Query("SELECT * FROM myproject.user")
@@ -37,7 +38,9 @@ func GetallMember(w http.ResponseWriter, r *http.Request) {
 		// log.Printf(data.Firstame, data.Id, data.Lastname, data.Role)
 
 	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(AllUser)
+	c.Header("content-Type", "application/json")
+	c.JSON(http.StatusOK, AllUser)
+	// w.Header().Set("Content-Type", "application/json")
+	// json.NewEncoder(w).Encode(AllUser)
 
 }

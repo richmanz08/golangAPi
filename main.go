@@ -1,20 +1,23 @@
 package main
 
 import (
-	L "api-webapp/Books"
-	J "api-webapp/Login"
+	L "api-webapp/Login"
 	M "api-webapp/Member"
 	"database/sql"
 	"fmt"
 	"log"
-	"net/http"
 
+	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/gorilla/mux"
 )
 
+// var (
+// 	router = gin.Default()
+// )
+
 func main() {
-	r := mux.NewRouter()
+
+	router := gin.Default()
 	myPrint()
 
 	// emy.Lunchtext()
@@ -31,17 +34,21 @@ func main() {
 	// Pass Variable to member.go
 	M.DB = db
 	//Login Authority Project Virify by jwt token
-	r.HandleFunc("/api/login", J.Authorityfunc).Methods("POST")
-	// My database api
-	r.HandleFunc("/api/memberall", M.GetallMember).Methods("GET")
-	// Book api
-	r.HandleFunc("/api/books", L.GetBooks).Methods("GET")
-	r.HandleFunc("/api/books/{id}", L.GetBook).Methods("GET")
-	r.HandleFunc("/api/books", L.CreateBook).Methods("POST")
-	r.HandleFunc("/api/books/{id}", L.UpdateBook).Methods("PUT")
-	r.HandleFunc("/api/books/{id}", L.DeleteBook).Methods("DELETE")
 
-	log.Fatal(http.ListenAndServe(":8000", r))
+	router.POST("/login", L.Login)
+	router.POST("/todo", L.CreateTodo)
+	router.POST("/logout", L.Logout)
+	// My database api
+	router.GET("/memberall", M.GetallMember)
+	// r.HandleFunc("/api/memberall", M.GetallMember).Methods("GET")
+	// Book api
+	// r.HandleFunc("/api/books", L.GetBooks).Methods("GET")
+	// r.HandleFunc("/api/books/{id}", L.GetBook).Methods("GET")
+	// r.HandleFunc("/api/books", L.CreateBook).Methods("POST")
+	// r.HandleFunc("/api/books/{id}", L.UpdateBook).Methods("PUT")
+	// r.HandleFunc("/api/books/{id}", L.DeleteBook).Methods("DELETE")
+
+	log.Fatal(router.Run(":8080"))
 
 }
 
