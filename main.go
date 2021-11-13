@@ -3,6 +3,7 @@ package main
 import (
 	L "api-webapp/Login"
 	M "api-webapp/Member"
+	COM "api-webapp/components"
 	"database/sql"
 	"fmt"
 	"log"
@@ -36,8 +37,8 @@ func main() {
 	//Login Authority Project Virify by jwt token
 
 	router.POST("/login", L.Login)
-	router.POST("/todo", L.CreateTodo)
 	router.POST("/logout", L.Logout)
+	router.POST("/description", COM.Components)
 	// My database api
 	router.GET("/memberall", M.GetallMember)
 	// r.HandleFunc("/api/memberall", M.GetallMember).Methods("GET")
