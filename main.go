@@ -17,10 +17,7 @@ import (
 // )
 
 func main() {
-
 	router := gin.Default()
-	myPrint()
-
 	// emy.Lunchtext()
 	// CONNECT DATABASE
 	db, err := sql.Open("mysql", "arnonpc:Xx0984437173@@tcp(127.0.0.1:3306)/myproject")
