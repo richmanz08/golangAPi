@@ -1,6 +1,7 @@
 package main
 
 import (
+	J "api-webapp/Books"
 	L "api-webapp/Login"
 	M "api-webapp/Member"
 	COM "api-webapp/components"
@@ -40,6 +41,8 @@ func main() {
 	router.GET("/memberall", M.GetallMember)
 	// r.HandleFunc("/api/memberall", M.GetallMember).Methods("GET")
 	// Book api
+	router.GET("/books", J.GetBooks)
+
 	// r.HandleFunc("/api/books", L.GetBooks).Methods("GET")
 	// r.HandleFunc("/api/books/{id}", L.GetBook).Methods("GET")
 	// r.HandleFunc("/api/books", L.CreateBook).Methods("POST")
