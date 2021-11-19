@@ -1,6 +1,7 @@
 package books
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -16,21 +17,30 @@ type Author struct {
 	Firstname string `json:"firstname"`
 	Lastname  string `json:"Lastname"`
 }
+type userImplement struct {
+	Id   int    `json:"id" binding:"required"`
+	Name string `json:"name" binding:"required"`
+}
 
 // Get All Books
 func GetBooks(c *gin.Context) {
-	var books []Book
-	c.Header("Access-Control-Allow-Origin", "*")
-	//Mock Data - @todo - implement DB
-	books = append(books, Book{ID: "1", Isbn: "448743", Title: "Book one", Author: &Author{Firstname: "JARD", Lastname: "scumdown"}})
-	books = append(books, Book{ID: "2", Isbn: "448744", Title: "Book two", Author: &Author{Firstname: "Smith", Lastname: "scumdown"}})
-	books = append(books, Book{ID: "3", Isbn: "448745", Title: "Book tree", Author: &Author{Firstname: "header", Lastname: "scumdown"}})
-	// w.Header().Set("Content-Type", "application/json")
-	// json.NewEncoder(w).Encode(books)
+	var req userImplement
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, "error get method post Structure failed")
+		return
+	} else {
+		fmt.Println("arnontest", req.Id, req.Name)
+		// show data from params
+		var books []Book
 
-	c.Header("Access-Control-Allow-Headers", "Authorization")
-	// c.JSON(http.StatusOK, gin.H{"data": books})
-	c.JSON(http.StatusOK, books)
+		//Mock Data - @todo - implement DB
+		books = append(books, Book{ID: "1", Isbn: "448743", Title: "Book one", Author: &Author{Firstname: "JARD", Lastname: "scumdown"}})
+		books = append(books, Book{ID: "2", Isbn: "448744", Title: "Book two", Author: &Author{Firstname: "Smith", Lastname: "scumdown"}})
+		books = append(books, Book{ID: "3", Isbn: "448745", Title: "Book tree", Author: &Author{Firstname: "header", Lastname: "scumdown"}})
+		// c.JSON(http.StatusOK, gin.H{"data": books})
+		c.JSON(http.StatusOK, books)
+	}
+
 }
 
 // Get Single Books

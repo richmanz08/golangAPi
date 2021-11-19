@@ -19,6 +19,7 @@ import (
 
 func main() {
 	router := gin.Default()
+	router.Use(CORSMiddleware())
 	// emy.Lunchtext()
 	// CONNECT DATABASE
 	db, err := sql.Open("mysql", "arnonpc:Xx0984437173@@tcp(127.0.0.1:3306)/myproject")
@@ -41,8 +42,8 @@ func main() {
 	router.GET("/memberall", M.GetallMember)
 	// r.HandleFunc("/api/memberall", M.GetallMember).Methods("GET")
 	// Book api
-	router.GET("/books", J.GetBooks)
-
+	// router.GET("/books", J.GetBooks)
+	router.POST("/books", J.GetBooks)
 	// r.HandleFunc("/api/books", L.GetBooks).Methods("GET")
 	// r.HandleFunc("/api/books/{id}", L.GetBook).Methods("GET")
 	// r.HandleFunc("/api/books", L.CreateBook).Methods("POST")
@@ -51,6 +52,23 @@ func main() {
 
 	log.Fatal(router.Run(":8080"))
 
+}
+
+func CORSMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Writer.Header().Set("Content-Type", "application/json")
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT")
+
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
+
+		c.Next()
+	}
 }
 
 // คำสั่ง [go run .] เพราะมันต้องเรียก package อื่นด้วย
