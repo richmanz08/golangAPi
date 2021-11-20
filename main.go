@@ -44,8 +44,7 @@ func main() {
 	// Book api
 	// router.GET("/books", J.GetBooks)
 	router.POST("/books", J.GetBooks)
-	// r.HandleFunc("/api/books", L.GetBooks).Methods("GET")
-	// r.HandleFunc("/api/books/{id}", L.GetBook).Methods("GET")
+	router.GET("/api/books", J.GetBookById)
 	// r.HandleFunc("/api/books", L.CreateBook).Methods("POST")
 	// r.HandleFunc("/api/books/{id}", L.UpdateBook).Methods("PUT")
 	// r.HandleFunc("/api/books/{id}", L.DeleteBook).Methods("DELETE")

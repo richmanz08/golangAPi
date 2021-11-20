@@ -57,7 +57,7 @@ func Login(c *gin.Context) {
 	// 	"refresh_token": ts.RefreshToken,
 	// }
 
-	userData = append(userData, Userdetail{ID: 999, Age: 22, Username: "rizhmanz", Firstname: "arnon", Lastname: "reas", Role: "admin",
+	userData = append(userData, Userdetail{ID: 999, Age: 22, Username: "rizhmanz08", Firstname: "arnon", Lastname: "Rungrueng", Role: "admin",
 		Token: &TokenStruct{
 			AccessToken: ts.AccessToken, RefrshToken: ts.RefreshToken,
 		}})
