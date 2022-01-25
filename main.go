@@ -14,10 +14,10 @@ import (
 
 func main() {
 	router := gin.Default()
-	router.Use(CORSMiddleware()) 
+	router.Use(CORSMiddleware())
 	// emy.Lunchtext()
 	// CONNECT DATABASE
-	
+
 	db, err := sql.Open("mysql", "root:@tcp(127.0.0.1:3306)/shoppingplatform")
 	if err != nil {
 		fmt.Println("Connect Database Failed")
@@ -48,15 +48,14 @@ func main() {
 	// r.HandleFunc("/api/books", L.CreateBook).Methods("POST")
 	// r.HandleFunc("/api/books/{id}", L.UpdateBook).Methods("PUT")
 	// r.HandleFunc("/api/books/{id}", L.DeleteBook).Methods("DELETE")
- 
 
+	router.GET("/testusetoken", COM.TestUseToken)
 
-
-	//Mobile app Product 
-	router.GET("/allproduct",COM.ShowAllProduct)
-	router.POST("/addproduct",COM.AddProDuct)
-	router.PUT("/updateproduct",COM.UpdateProduct)
-	router.DELETE("/deletedproduct/:id",COM.DeleteProduct)
+	//Mobile app Product
+	router.GET("/allproduct", COM.ShowAllProduct)
+	router.POST("/addproduct", COM.AddProDuct)
+	router.PUT("/updateproduct", COM.UpdateProduct)
+	router.DELETE("/deletedproduct/:id", COM.DeleteProduct)
 	log.Fatal(router.Run(":8080"))
 
 }

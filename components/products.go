@@ -1,11 +1,11 @@
 package components
 
 import (
+	Ex "api-webapp/Login"
+	MES "api-webapp/Message"
 	"database/sql"
 	"fmt"
 	"net/http"
-
-	MES "api-webapp/Message"
 
 	"github.com/gin-gonic/gin"
 )
@@ -106,4 +106,27 @@ func DeleteProduct(c *gin.Context) {
 		fmt.Println("smt.Exec failed: ", err)
 	}
 	c.JSON(http.StatusOK, MES.Deleted_Success)
+}
+
+
+func TestUseToken(c *gin.Context) {
+	//เช็คว่า มี token ในระบบหรือไม่
+	tokenAuth, err := Ex.ExtractTokenMetadata(c.Request)
+	fmt.Println("checktoken", tokenAuth)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, MES.Token_Error)
+	}
+	//เช็คว่า token หมดเวลาหรือถูก denied ไปหรือยัง
+	userId, err := Ex.FetchAuth(tokenAuth)
+	fmt.Println("checktoken", userId)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, MES.Token_timeout)
+	}else{
+		// TO DO WORKING API
+		c.JSON(http.StatusCreated, MES.Token_Validator)
+	}
+	
+	// Des.UserID = userId
+
+	
 }
