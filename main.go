@@ -1,7 +1,6 @@
 package main
 
 import (
-	J "api-webapp/Books"
 	L "api-webapp/Login"
 	M "api-webapp/Member"
 	COM "api-webapp/components"
@@ -13,16 +12,13 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-// var (
-// 	router = gin.Default()
-// )
-
 func main() {
 	router := gin.Default()
-	router.Use(CORSMiddleware())
+	router.Use(CORSMiddleware()) 
 	// emy.Lunchtext()
 	// CONNECT DATABASE
-	db, err := sql.Open("mysql", "arnonpc:Xx0984437173@@tcp(127.0.0.1:3306)/myproject")
+	
+	db, err := sql.Open("mysql", "root:@tcp(127.0.0.1:3306)/shoppingplatform")
 	if err != nil {
 		fmt.Println("Connect Database Failed")
 		panic(err.Error())
@@ -31,24 +27,36 @@ func main() {
 		fmt.Println("Connect Database Success")
 	}
 	defer db.Close()
-	// Pass Variable to member.go
 	M.DB = db
+	COM.DB = db
+
+	// Pass Variable to member.go
+
 	//Login Authority Project Virify by jwt token
 
 	router.POST("/login", L.Login)
 	router.POST("/logout", L.Logout)
-	router.POST("/description", COM.Components)
+	// router.POST("/description", COM.Components)
 	// My database api
-	router.GET("/memberall", M.GetallMember)
+	// router.GET("/memberall", M.GetallMember)
 	// r.HandleFunc("/api/memberall", M.GetallMember).Methods("GET")
 	// Book api
 	// router.GET("/books", J.GetBooks)
-	router.POST("/books", J.GetBooks)
-	router.GET("/api/books", J.GetBookById)
+	// router.POST("/books", J.GetBooks)
+	// router.GET("/api/books", J.GetBookById)
+
 	// r.HandleFunc("/api/books", L.CreateBook).Methods("POST")
 	// r.HandleFunc("/api/books/{id}", L.UpdateBook).Methods("PUT")
 	// r.HandleFunc("/api/books/{id}", L.DeleteBook).Methods("DELETE")
+ 
 
+
+
+	//Mobile app Product 
+	router.GET("/allproduct",COM.ShowAllProduct)
+	router.POST("/addproduct",COM.AddProDuct)
+	router.PUT("/updateproduct",COM.UpdateProduct)
+	router.DELETE("/deletedproduct/:id",COM.DeleteProduct)
 	log.Fatal(router.Run(":8080"))
 
 }

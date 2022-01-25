@@ -85,7 +85,8 @@ func GetBookById(c *gin.Context) {
 // 	books = append(books, book)
 // 	json.NewEncoder(w).Encode(book)
 
-// } //Update a New Book
+// }
+ //Update a New Book
 // func UpdateBook(w http.ResponseWriter, r *http.Request) {
 // 	w.Header().Set("Content-Type", "application/json")
 // 	params := mux.Vars(r)
