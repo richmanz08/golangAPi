@@ -1,7 +1,6 @@
 package components
 
 import (
-	Ex "api-webapp/Login"
 	MES "api-webapp/Message"
 	"database/sql"
 	"fmt"
@@ -109,24 +108,4 @@ func DeleteProduct(c *gin.Context) {
 }
 
 
-func TestUseToken(c *gin.Context) {
-	//เช็คว่า มี token ในระบบหรือไม่
-	tokenAuth, err := Ex.ExtractTokenMetadata(c.Request)
-	fmt.Println("checktoken", tokenAuth)
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, MES.Token_Error)
-	}
-	//เช็คหาว่าเป็นใคร
-	userId, err := Ex.FetchAuth(tokenAuth)
-	fmt.Println("checktoken", userId)
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, MES.Token_timeout)
-	}else{
-		// TO DO WORKING API
-		c.JSON(http.StatusCreated, MES.Token_Validator)
-	}
-	
-	// Des.UserID = userId
 
-	
-}

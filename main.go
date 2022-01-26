@@ -3,6 +3,7 @@ package main
 import (
 	L "api-webapp/Login"
 	M "api-webapp/Member"
+	P "api-webapp/another"
 	C "api-webapp/cloud"
 	COM "api-webapp/components"
 	"database/sql"
@@ -49,11 +50,11 @@ func main() {
 	// r.HandleFunc("/api/books", L.CreateBook).Methods("POST")
 	// r.HandleFunc("/api/books/{id}", L.UpdateBook).Methods("PUT")
 	// r.HandleFunc("/api/books/{id}", L.DeleteBook).Methods("DELETE")
-
-	router.GET("/testusetoken", COM.TestUseToken)
+router.GET("/testenv",P.TestEnvironment)
+	router.GET("/testusetoken", P.TestUseToken)
 	//Image Upload On Cloud Service ##
 	router.POST("/cloud-storage-bucket",C.HandleFileUploadToBucket)
-	router.GET("/cloud-get-image",C.GetFile)
+	router.PUT("/cloud-get-image",C.GetUrlFile)
 
 	//Mobile app Product
 	router.GET("/allproduct", COM.ShowAllProduct)
