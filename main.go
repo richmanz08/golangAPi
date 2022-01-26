@@ -3,6 +3,7 @@ package main
 import (
 	L "api-webapp/Login"
 	M "api-webapp/Member"
+	C "api-webapp/cloud"
 	COM "api-webapp/components"
 	"database/sql"
 	"fmt"
@@ -36,6 +37,7 @@ func main() {
 
 	router.POST("/login", L.Login)
 	router.POST("/logout", L.Logout)
+
 	// router.POST("/description", COM.Components)
 	// My database api
 	// router.GET("/memberall", M.GetallMember)
@@ -44,12 +46,14 @@ func main() {
 	// router.GET("/books", J.GetBooks)
 	// router.POST("/books", J.GetBooks)
 	// router.GET("/api/books", J.GetBookById)
-
 	// r.HandleFunc("/api/books", L.CreateBook).Methods("POST")
 	// r.HandleFunc("/api/books/{id}", L.UpdateBook).Methods("PUT")
 	// r.HandleFunc("/api/books/{id}", L.DeleteBook).Methods("DELETE")
 
 	router.GET("/testusetoken", COM.TestUseToken)
+	//Image Upload On Cloud Service ##
+	router.POST("/cloud-storage-bucket",C.HandleFileUploadToBucket)
+	router.GET("/cloud-get-image",C.GetFile)
 
 	//Mobile app Product
 	router.GET("/allproduct", COM.ShowAllProduct)

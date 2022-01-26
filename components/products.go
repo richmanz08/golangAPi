@@ -116,7 +116,7 @@ func TestUseToken(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, MES.Token_Error)
 	}
-	//เช็คว่า token หมดเวลาหรือถูก denied ไปหรือยัง
+	//เช็คหาว่าเป็นใคร
 	userId, err := Ex.FetchAuth(tokenAuth)
 	fmt.Println("checktoken", userId)
 	if err != nil {
