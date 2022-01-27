@@ -3,6 +3,7 @@ package main
 import (
 	L "api-webapp/Login"
 	M "api-webapp/Member"
+
 	P "api-webapp/another"
 	C "api-webapp/cloud"
 	COM "api-webapp/components"
@@ -31,6 +32,7 @@ func main() {
 	defer db.Close()
 	M.DB = db
 	COM.DB = db
+	C.DB =db
 
 	// Pass Variable to member.go
 

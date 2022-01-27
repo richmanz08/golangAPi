@@ -1,6 +1,7 @@
 package cloud
 
 import (
+	"database/sql"
 	"fmt"
 	"io"
 	"net/http"
@@ -16,6 +17,16 @@ import (
 var (
 	storageClient *storage.Client
 )
+
+type FileStruct struct {
+	// Imageid   int32  `json:"image_id"`
+	ProductID int32    `json:"product_id"`
+	Url       string `json:"url_path"`
+	ImageName string `json:"image_name"`
+	// Time  time.Time `json:"time"`
+}
+
+var DB *sql.DB
 
 func HandleFileUploadToBucket(c *gin.Context) {
 	bucket := "image_services_golang" //your bucket name
@@ -46,7 +57,6 @@ func HandleFileUploadToBucket(c *gin.Context) {
 
 	sw := storageClient.Bucket(bucket).Object(uploadedFile.Filename).NewWriter(ctx)
 
-    // fmt.Print(sw.Attrs().Name)
 	if _, err := io.Copy(sw, f); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": err.Error(),
@@ -62,7 +72,7 @@ func HandleFileUploadToBucket(c *gin.Context) {
 		})
 		return
 	}
-var urlLink = "https://storage.googleapis.com"
+	var urlLink = "https://storage.googleapis.com"
 	u, err := url.Parse(urlLink + "/" + bucket + "/" + sw.Attrs().Name)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -72,13 +82,32 @@ var urlLink = "https://storage.googleapis.com"
 		return
 	}
 
+	//INSERT TO DB
+var ImageType FileStruct
+	ImageType.ProductID =  1
+	ImageType.ImageName = sw.Attrs().Name
+	ImageType.Url = urlLink + u.EscapedPath()
+	// ImageType.ImageName = "arnon.png"
+	// ImageType.Url = "https://storage.cloud.google.com/image_services_golang/product14.png"
+	
+	
+	data, err := DB.Prepare("INSERT INTO bucketimage(product_id,url_path,image_name) VALUES(?,?,?)")
+	if err != nil {
+		fmt.Println("err case 2")
+	}
+	defer data.Close()
+	// start := time.Now()
+	// Image.Time = start
+	// fmt.Println(Image.ProductID)
+	// fmt.Println(Image.Url)
+	// fmt.Println(Image.ImageName)
+	data.Exec(ImageType.ProductID,ImageType.Url, ImageType.ImageName)
 
-	c.JSON(http.StatusOK, gin.H{
-		"message":  "file uploaded successfully",
-		"pathname": urlLink+u.EscapedPath(),
-		
-	})
-
+	c.JSON(http.StatusCreated, ImageType)
+	// c.JSON(http.StatusOK, gin.H{
+	// 	"message":  "file uploaded successfully",
+	// 	"pathname": ImageType.Url,
+	// })
 }
 func GetUrlFile(c *gin.Context) {
 	bucket := "image_services_golang"
