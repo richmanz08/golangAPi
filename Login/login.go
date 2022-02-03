@@ -149,6 +149,7 @@ func Login(c *gin.Context) {
 				}
 
 				c.JSON(http.StatusOK, m)
+				
 			}else{
 				c.JSON(http.StatusBadRequest, "login failed")
 			}
@@ -172,3 +173,9 @@ func Logout(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, "Successfully logged out")
 }
+
+
+// การแปลงข้อมูลที่ได้มาเป็น json
+// resRp := &rp 
+// resRp2, _ := json.Marshal(resRp)
+//  fmt.Println("Rp", string(resRp2))
