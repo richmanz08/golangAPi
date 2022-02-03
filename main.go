@@ -32,7 +32,9 @@ func main() {
 	defer db.Close()
 	M.DB = db
 	COM.DB = db
+	COM.DBmember = db
 	C.DB =db
+	L.DB = db
 
 	// Pass Variable to member.go
 
@@ -54,15 +56,23 @@ func main() {
 	// r.HandleFunc("/api/books/{id}", L.DeleteBook).Methods("DELETE")
 router.GET("/testenv",P.TestEnvironment)
 	router.GET("/testusetoken", P.TestUseToken)
-	//Image Upload On Cloud Service ##
+	//#### Cloud Service ####
 	router.POST("/cloud-storage-bucket",C.HandleFileUploadToBucket)
 	router.PUT("/cloud-get-image",C.GetUrlFile)
 
-	//Mobile app Product
+	//##### Product ####
 	router.GET("/allproduct", COM.ShowAllProduct)
 	router.POST("/addproduct", COM.AddProDuct)
 	router.PUT("/updateproduct", COM.UpdateProduct)
 	router.DELETE("/deletedproduct/:id", COM.DeleteProduct)
+
+	//#### Member #####
+    router.POST("/addmember",COM.CreateUser)
+	router.GET("/allusers",COM.ShowallUser)
+	router.GET("/userbyid/:id",COM.GetUserById)
+	router.DELETE("/deluserbyid/:id",COM.DeletedUser)
+	router.PUT("/edituser",COM.EditUserById)
+
 	log.Fatal(router.Run(":8080"))
 
 }

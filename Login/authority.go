@@ -27,7 +27,7 @@ type TokenDetails struct {
 }
 type TokenStruct struct {
 	AccessToken string
-	RefrshToken string
+	RefreshToken string
 }
 
 func CreateToken(userid uint64) (*TokenDetails, error) {
