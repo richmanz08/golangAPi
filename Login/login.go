@@ -99,16 +99,21 @@ func Login(c *gin.Context) {
 	var u loginParamsStruct
 
 	if err := c.ShouldBindJSON(&u); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, "Invalid json provided")
+		c.JSON(http.StatusBadRequest, "login failed")
 		return
 	}
-	data, err := DB.Query("SELECT * FROM members WHERE username=? ", u.Username)
+	data, err := DB.Query("SELECT * FROM members WHERE username=?  ", u.Username)
 	if err != nil {
 		fmt.Println("connect table fail")
 	}
 	defer data.Close()
+	fmt.Println()
+	
+
+	var checkState bool
 
 	for data.Next() {
+
 		var new memberFullStruct
 		err = data.Scan(&new.AccountId,
 			&new.Username,
@@ -126,7 +131,8 @@ func Login(c *gin.Context) {
 		if new.Username == u.Username {
 			MatchingPassword := CheckPasswordHash(u.Password, new.Password)
 			// fmt.Print(match)
-			if MatchingPassword == true {
+
+			if MatchingPassword == true  {
 				m.AccountId = new.AccountId
 				m.Username = new.Username
 				m.Password = new.Password
@@ -147,15 +153,17 @@ func Login(c *gin.Context) {
 				m.Token = &TokenStruct{
 					AccessToken: ts.AccessToken, RefreshToken: ts.RefreshToken,
 				}
-
-				c.JSON(http.StatusOK, m)
 				
-			}else{
-				c.JSON(http.StatusBadRequest, "login failed")
-			}
+				checkState = true
+				c.JSON(http.StatusOK, m)
 
-		}
+			} 
 
+		} 
+	
+	}
+	if checkState == false {
+		c.JSON(http.StatusBadRequest, "login failed")
 	}
 
 }
@@ -174,8 +182,7 @@ func Logout(c *gin.Context) {
 	c.JSON(http.StatusOK, "Successfully logged out")
 }
 
-
 // การแปลงข้อมูลที่ได้มาเป็น json
-// resRp := &rp 
+// resRp := &rp
 // resRp2, _ := json.Marshal(resRp)
 //  fmt.Println("Rp", string(resRp2))
