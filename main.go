@@ -21,7 +21,8 @@ func main() {
 	// emy.Lunchtext()
 	// CONNECT DATABASE
 
-	db, err := sql.Open("mysql", "root:@tcp(127.0.0.1:3306)/shoppingplatform")
+	db, err := sql.Open("mysql", "root:Xx0984437173@@tcp(127.0.0.1:3306)/shoppingplatform") //for client macOS
+	// db, err := sql.Open("mysql", "root:@@tcp(127.0.0.1:3306)/shoppingplatform") //for client PC Window
 	if err != nil {
 		fmt.Println("Connect Database Failed")
 		panic(err.Error())
@@ -33,7 +34,7 @@ func main() {
 	M.DB = db
 	COM.DB = db
 	COM.DBmember = db
-	C.DB =db
+	C.DB = db
 	L.DB = db
 
 	// Pass Variable to member.go
@@ -54,11 +55,11 @@ func main() {
 	// r.HandleFunc("/api/books", L.CreateBook).Methods("POST")
 	// r.HandleFunc("/api/books/{id}", L.UpdateBook).Methods("PUT")
 	// r.HandleFunc("/api/books/{id}", L.DeleteBook).Methods("DELETE")
-router.GET("/testenv",P.TestEnvironment)
+	router.GET("/testenv", P.TestEnvironment)
 	router.GET("/testusetoken", P.TestUseToken)
 	//#### Cloud Service ####
-	router.POST("/cloud-storage-bucket",C.HandleFileUploadToBucket)
-	router.PUT("/cloud-get-image",C.GetUrlFile)
+	router.POST("/cloud-storage-bucket", C.HandleFileUploadToBucket)
+	router.PUT("/cloud-get-image", C.GetUrlFile)
 
 	//##### Product ####
 	router.GET("/allproduct", COM.ShowAllProduct)
@@ -67,11 +68,11 @@ router.GET("/testenv",P.TestEnvironment)
 	router.DELETE("/deletedproduct/:id", COM.DeleteProduct)
 
 	//#### Member #####
-    router.POST("/addmember",COM.CreateUser)
-	router.GET("/allusers",COM.ShowallUser)
-	router.GET("/userbyid/:id",COM.GetUserById)
-	router.DELETE("/deluserbyid/:id",COM.DeletedUser)
-	router.PUT("/edituser",COM.EditUserById)
+	router.POST("/addmember", COM.CreateUser)
+	router.GET("/allusers", COM.ShowallUser)
+	router.GET("/userbyid/:id", COM.GetUserById)
+	router.DELETE("/deluserbyid/:id", COM.DeletedUser)
+	router.PUT("/edituser", COM.EditUserById)
 
 	log.Fatal(router.Run(":8080"))
 
