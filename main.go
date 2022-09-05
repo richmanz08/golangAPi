@@ -101,3 +101,4 @@ func CORSMiddleware() gin.HandlerFunc {
 }
 
 // คำสั่ง [go run .] เพราะมันต้องเรียก package อื่นด้วย
+//หากต้องการ auto run เมื่อ save nodemon --exec go run main.go

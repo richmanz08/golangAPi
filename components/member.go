@@ -181,5 +181,5 @@ func DeletedUser(c *gin.Context) {
 	defer data.Close()
 
 }
-// สอนอัพโหลดไฟล์
+// สอนอัพโหลดไฟล์นะ
 // https://tutorialedge.net/golang/go-file-upload-tutorial/ 
