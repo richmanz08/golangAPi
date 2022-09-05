@@ -2,7 +2,9 @@ package main
 
 import (
 	L "api-webapp/Login"
-	M "api-webapp/Member"
+	"net/http"
+
+	// M "api-webapp/Member"
 
 	P "api-webapp/another"
 	C "api-webapp/cloud"
@@ -21,8 +23,8 @@ func main() {
 	// emy.Lunchtext()
 	// CONNECT DATABASE
 
-	db, err := sql.Open("mysql", "root:Xx0984437173@@tcp(127.0.0.1:3306)/shoppingplatform") //for client macOS
-	// db, err := sql.Open("mysql", "root:@@tcp(127.0.0.1:3306)/shoppingplatform") //for client PC Window
+	// db, err := sql.Open("mysql", "root:Xx0984437173@@tcp(127.0.0.1:3306)/app_database") //for client macOS
+	db, err := sql.Open("mysql", "root:1234@tcp(127.0.0.1:3306)/app_database") //for client PC Window
 	if err != nil {
 		fmt.Println("Connect Database Failed")
 		panic(err.Error())
@@ -31,7 +33,7 @@ func main() {
 		fmt.Println("Connect Database Success")
 	}
 	defer db.Close()
-	M.DB = db
+	// M.DB = db
 	COM.DB = db
 	COM.DBmember = db
 	C.DB = db
@@ -57,6 +59,9 @@ func main() {
 	// r.HandleFunc("/api/books/{id}", L.DeleteBook).Methods("DELETE")
 	router.GET("/testenv", P.TestEnvironment)
 	router.GET("/testusetoken", P.TestUseToken)
+	router.POST("/upimage-local",P.TestUploadImageOnLocalHost)
+	router.StaticFS("/public",http.Dir("public"))
+
 	//#### Cloud Service ####
 	router.POST("/cloud-storage-bucket", C.HandleFileUploadToBucket)
 	router.PUT("/cloud-get-image", C.GetUrlFile)
