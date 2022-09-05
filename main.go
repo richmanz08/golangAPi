@@ -48,29 +48,21 @@ func main() {
 
 	// router.POST("/description", COM.Components)
 	// My database api
-	// router.GET("/memberall", M.GetallMember)
-	// r.HandleFunc("/api/memberall", M.GetallMember).Methods("GET")
-	// Book api
-	// router.GET("/books", J.GetBooks)
-	// router.POST("/books", J.GetBooks)
-	// router.GET("/api/books", J.GetBookById)
-	// r.HandleFunc("/api/books", L.CreateBook).Methods("POST")
-	// r.HandleFunc("/api/books/{id}", L.UpdateBook).Methods("PUT")
-	// r.HandleFunc("/api/books/{id}", L.DeleteBook).Methods("DELETE")
+
 	router.GET("/testenv", P.TestEnvironment)
 	router.GET("/testusetoken", P.TestUseToken)
 	router.POST("/upimage-local",P.TestUploadImageOnLocalHost)
 	router.StaticFS("/public",http.Dir("public"))
 
 	//#### Cloud Service ####
-	router.POST("/cloud-storage-bucket", C.HandleFileUploadToBucket)
-	router.PUT("/cloud-get-image", C.GetUrlFile)
+	// router.POST("/cloud-storage-bucket", C.HandleFileUploadToBucket)
+	// router.PUT("/cloud-get-image", C.GetUrlFile)
 
 	//##### Product ####
-	router.GET("/allproduct", COM.ShowAllProduct)
-	router.POST("/addproduct", COM.AddProDuct)
-	router.PUT("/updateproduct", COM.UpdateProduct)
-	router.DELETE("/deletedproduct/:id", COM.DeleteProduct)
+	// router.GET("/allproduct", COM.ShowAllProduct)
+	// router.POST("/addproduct", COM.AddProDuct)
+	// router.PUT("/updateproduct", COM.UpdateProduct)
+	// router.DELETE("/deletedproduct/:id", COM.DeleteProduct)
 
 	//#### Member #####
 	router.POST("/addmember", COM.CreateUser)
