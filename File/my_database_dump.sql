@@ -59,8 +59,9 @@ CREATE TABLE `members` (
   `phone` varchar(10) NOT NULL,
   `role` varchar(255) NOT NULL,
   `status` varchar(45) NOT NULL,
+  `image_path` varchar(255) NOT NULL,
   PRIMARY KEY (`account_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=30 DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -69,7 +70,7 @@ CREATE TABLE `members` (
 
 LOCK TABLES `members` WRITE;
 /*!40000 ALTER TABLE `members` DISABLE KEYS */;
-INSERT INTO `members` VALUES (25,'rojer','$2a$14$noPNbi/4bpPlhXd5uOFqR.XZsWTbnqbs0.QnWHmV.yQqSl4f67GuG','rojer@cpmatch.com','rojer','avenger','0984437173','Admin',''),(26,'arun','$2a$14$tACTxI0HxN91B/PhXQ6SueglfByahlnoMTyau021Omh.Nkuagz67q','anni@cpmatch.com','dem','avenger','0984437173','Admin','active');
+INSERT INTO `members` VALUES (25,'rojer','$2a$14$noPNbi/4bpPlhXd5uOFqR.XZsWTbnqbs0.QnWHmV.yQqSl4f67GuG','rojer@cpmatch.com','rojer','avenger','0984437173','admin','active',''),(26,'arun','$2a$14$tACTxI0HxN91B/PhXQ6SueglfByahlnoMTyau021Omh.Nkuagz67q','anni@cpmatch.com','dem','avenger','0984437173','admin','active',''),(27,'daemontargar','$2a$14$3TaQppguz.BzSuUgDkIbw.IKEZ/gaz9C8eCx1DwsRd4cyQIXM1pBW','daemon@gmail.com','daemon','targelian','0984437173','admin','inactive','http://localhost:8080/public/pubg-logo-1.png'),(28,'daemonmaster','$2a$14$rqXRCXcLGHg6eUg.5/tTie4Sv3fT.eKFHS0bw7h8a0DJPOh/NzJYC','daemon@gmail.com','daemon','targelian','0984437173','admin','inactive','http://localhost:8080/public/daemon.jpg'),(29,'daemonmaster','$2a$14$FK6Zn8iYj1D943n8UqtvPOnGME.cCQHzFZIVcyPZzfZjDt2DZqE32','daemon@gmail.com','daemon','targelian','0984437173','admin','inactive','http://localhost:8080/public/daemon.jpg');
 /*!40000 ALTER TABLE `members` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -110,4 +111,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2022-09-05 16:49:19
+-- Dump completed on 2022-09-19 17:01:36
