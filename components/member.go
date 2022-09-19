@@ -35,6 +35,7 @@ type memberFullStruct struct {
 	Phone     string `json:"phone"`
 	Role      string `json:"role" `
 	Status    string `json:"status"`
+	ImageURL string `Json:"image_path"`
 }
 
 func HashPassword(password string) (string, error) {
@@ -63,6 +64,7 @@ func ShowallUser(c *gin.Context) {
 				&new.Phone,
 				&new.Role,
 				&new.Status,
+				&new.ImageURL,
 			)
 			if err != nil {
 				panic(err.Error())
@@ -77,6 +79,7 @@ func ShowallUser(c *gin.Context) {
 					Phone:     new.Phone,
 					Role:      new.Role,
 					Status:    new.Status,
+					ImageURL: new.ImageURL,
 				})
 		}
 		c.JSON(http.StatusOK, member)
@@ -128,11 +131,11 @@ func EditUserById(c *gin.Context) {
 		return
 	}
 	fmt.Println(member)
-	data, err := DB.Prepare("UPDATE members SET account_id=?,username=?,email=?,firstname=?,lastname=?,phone=?,role=?,status=? WHERE account_id=?")
+	data, err := DB.Prepare("UPDATE members SET username=?,email=?,firstname=?,lastname=?,phone=?,role=?,status=? WHERE account_id=?")
 	if err != nil {
 		fmt.Println(err)
 	} else {
-		if _, err := data.Exec(member.AccountId, member.Username, member.Email, member.FirstName, member.LastName, member.Phone, member.Role, member.Status, member.AccountId); err != nil {
+		if _, err := data.Exec( member.Username, member.Email, member.FirstName, member.LastName, member.Phone, member.Role, member.Status, member.AccountId); err != nil {
 			fmt.Println("update failed")
 			c.JSON(http.StatusBadRequest, "### update failed ### ")
 		} else {
