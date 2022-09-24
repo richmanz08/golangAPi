@@ -70,6 +70,7 @@ func main() {
 	router.GET("/userbyid/:id", COM.GetUserById)
 	router.DELETE("/deluserbyid/:id", COM.DeletedUser)
 	router.PUT("/edituser", COM.EditUserById)
+	router.GET("/sumofmember",COM.CounterMember)
 	
 	log.Fatal(router.Run(":8080"))
 
