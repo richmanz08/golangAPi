@@ -146,14 +146,17 @@ func EditUserById(c *gin.Context) {
 }
 
 func CreateUser(c *gin.Context) {
-
+	
 	file,header,err := c.Request.FormFile("file")
+	// fmt.Println("file is:::",file)
+	// fmt.Println("header is:::",header.Filename)
 	if err != nil {
-		c.String(http.StatusBadRequest, fmt.Sprintf("file err : %s", err.Error()))
-		return
+	 	c.String(http.StatusBadRequest, fmt.Sprintf("file err : %s", err.Error()))
+	 	return
 	}
 
 	form,err := c.MultipartForm()
+
 	if err != nil{
 		c.JSON(http.StatusBadRequest, "### create user failed ###")
 	}
@@ -220,6 +223,22 @@ func DeletedUser(c *gin.Context) {
 	defer data.Close()
 
 }
+
+func CounterMember(c *gin.Context){
+
+// sql
+
+	// SELECT 
+	// COUNT(*) as 'Total_member',
+	// COUNT(CASE when role = 'user' then 1 end) as 'user',
+	// COUNT(CASE when role = 'admin' then 1 end) as 'admin',
+	// COUNT(CASE when status = 'active' then 1 end) as 'status_active',
+	// COUNT(CASE when status = 'inactive' then 1 end) as 'status_inactive'
+	// FROM app_database.members ;
+}
+
+
+
 
 // สอนอัพโหลดไฟล์นะ
 // https://tutorialedge.net/golang/go-file-upload-tutorial/
