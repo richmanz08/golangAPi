@@ -45,14 +45,14 @@ type counterStruct struct {
 	ActiveUser   int32 `json:"status_active"`
 	InActiveUser int32 `json:"status_inactive"`
 }
-// type queryStruct struct {
-// 	Username string `json:"username" `
-// 	Email    string `json:"email" `
-// 	Name     string `json:"name" `
-// 	Limit    string  `json:"limit"`
-// 	Page      string `json:"page"`
+type queryStruct struct {
+	Username string `json:"username" `
+	Email    string `json:"email" `
+	Name     string `json:"name" `
+	Limit    string  `json:"limit"`
+	Page      string `json:"page"`
 
-// }
+}
 
 func HashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
@@ -63,7 +63,7 @@ func CheckPasswordHash(password, hash string) bool {
 	return err == nil
 }
 func ShowallUser(c *gin.Context) {
-	// var query queryStruct
+
 	var member []memberFullStruct
 	getUsername := c.Request.URL.Query().Get("username")
 	getEmail := c.Request.URL.Query().Get("email")
@@ -71,6 +71,10 @@ func ShowallUser(c *gin.Context) {
 	getLimit := c.Request.URL.Query().Get("limit")
 	getPage :=  c.Request.URL.Query().Get("page")
 
+	var query queryStruct
+	query.Username = "-"
+	query.Name = "-"
+	query.Email = "-"
 
 	LimitInteger,err := strconv.Atoi(getLimit)
 	if err != nil{
@@ -80,34 +84,41 @@ func ShowallUser(c *gin.Context) {
 	if err != nil{
 		fmt.Println("system:::parse int error")
 	}
-	// if err := c.ShouldBindJSON(&query); err != nil {
-	// 	fmt.Println(err)
-	// 	return
-	// }
-	fmt.Println(getUsername,getEmail,getName,LimitInteger,PageInteger)
-	var addSearchField =  ""
-	var text = ""
-	if len(getUsername) > 0 {
-		addSearchField = "WHERE username like ?"
-		text = getUsername
-	}else if len(getName) > 0{
-		addSearchField = "WHERE firstname like ?"
-		text = getName
-	}else if len(getEmail) > 0{
-		addSearchField = "WHERE email like ?"
-		text = getEmail
-	}else{
-		addSearchField ="WHERE username or firstname or lastname or email like ?"
-		text = ""
+
+	if len(getUsername) >0{
+		query.Username = getUsername
+	}
+	if len(getName) >0{
+		query.Name = getName
 	}
 
-	querySQL := `SELECT * FROM members `+ addSearchField +` LIMIT ? OFFSET ?`
-	fmt.Println(querySQL)
-	data , err := DB.Query(querySQL,"%"+text+"%",LimitInteger,(PageInteger-1)*LimitInteger,)
+	if len(getEmail) >0{
+		query.Email = getEmail
+	}
 
+	if len(getUsername) <= 0 && len(getName) <= 0 &&len(getEmail) <= 0 {
+	query.Username = ""
+	query.Name = ""
+	query.Email = ""
+	}
+
+
+
+
+	querySQL := `SELECT * FROM members 
+	WHERE username LIKE ? 
+	or firstname LIKE ? 
+	or lastname LIKE ? 
+	or email LIKE ? 
+	LIMIT ? OFFSET ?`
+
+	fmt.Println(querySQL)
+
+	data , err := DB.Query(querySQL,"%"+query.Username+"%","%"+query.Name+"%","%"+query.Name+"%","%"+query.Email+"%",LimitInteger,(PageInteger-1)*LimitInteger,)
 
 	if err != nil {
 		fmt.Println(err)
+		c.JSON(http.StatusBadRequest,"SQL Error")
 	} else {
 		for data.Next() {
 			var new memberFullStruct
@@ -140,8 +151,8 @@ func ShowallUser(c *gin.Context) {
 		}
 		c.JSON(http.StatusOK, member)
 	}
-
 	defer data.Close()
+	
 }
 
 func GetUserById(c *gin.Context) {
