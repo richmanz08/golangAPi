@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
@@ -44,14 +45,14 @@ type counterStruct struct {
 	ActiveUser   int32 `json:"status_active"`
 	InActiveUser int32 `json:"status_inactive"`
 }
-type queryStruct struct {
-	Username string `json:"username" `
-	Email    string `json:"email" `
-	Name     string `json:"name" `
-	Limit    int16  `json:"limit"`
-	Page      int16 `json:"page"`
+// type queryStruct struct {
+// 	Username string `json:"username" `
+// 	Email    string `json:"email" `
+// 	Name     string `json:"name" `
+// 	Limit    string  `json:"limit"`
+// 	Page      string `json:"page"`
 
-}
+// }
 
 func HashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
@@ -62,31 +63,47 @@ func CheckPasswordHash(password, hash string) bool {
 	return err == nil
 }
 func ShowallUser(c *gin.Context) {
-	var query queryStruct
+	// var query queryStruct
 	var member []memberFullStruct
-	if err := c.ShouldBindJSON(&query); err != nil {
-		fmt.Println(err)
-		return
+	getUsername := c.Request.URL.Query().Get("username")
+	getEmail := c.Request.URL.Query().Get("email")
+	getName := c.Request.URL.Query().Get("name")
+	getLimit := c.Request.URL.Query().Get("limit")
+	getPage :=  c.Request.URL.Query().Get("page")
+
+
+	LimitInteger,err := strconv.Atoi(getLimit)
+	if err != nil{
+		fmt.Println("system:::parse int error")
 	}
+	PageInteger,err := strconv.Atoi(getPage)
+	if err != nil{
+		fmt.Println("system:::parse int error")
+	}
+	// if err := c.ShouldBindJSON(&query); err != nil {
+	// 	fmt.Println(err)
+	// 	return
+	// }
+	fmt.Println(getUsername,getEmail,getName,LimitInteger,PageInteger)
 	var addSearchField =  ""
 	var text = ""
-	if len(query.Username) > 0 {
+	if len(getUsername) > 0 {
 		addSearchField = "WHERE username like ?"
-		text = query.Username
-	}else if len(query.Name) > 0{
-		addSearchField = "WHERE firstname or lastname like ?"
-		text = query.Name
-	}else if len(query.Email) > 0{
+		text = getUsername
+	}else if len(getName) > 0{
+		addSearchField = "WHERE firstname like ?"
+		text = getName
+	}else if len(getEmail) > 0{
 		addSearchField = "WHERE email like ?"
-		text = query.Email
+		text = getEmail
 	}else{
-		addSearchField =" WHERE username or firstname or lastname or email like ?"
+		addSearchField ="WHERE username or firstname or lastname or email like ?"
 		text = ""
 	}
 
 	querySQL := `SELECT * FROM members `+ addSearchField +` LIMIT ? OFFSET ?`
 	fmt.Println(querySQL)
-	data , err := DB.Query(querySQL,"%"+text+"%",query.Limit,(query.Page-1)*query.Limit,)
+	data , err := DB.Query(querySQL,"%"+text+"%",LimitInteger,(PageInteger-1)*LimitInteger,)
 
 
 	if err != nil {
