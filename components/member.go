@@ -48,6 +48,9 @@ type queryStruct struct {
 	Username string `json:"username" `
 	Email    string `json:"email" `
 	Name     string `json:"name" `
+	Limit    int16  `json:"limit"`
+	Page      int16 `json:"page"`
+
 }
 
 func HashPassword(password string) (string, error) {
@@ -60,28 +63,32 @@ func CheckPasswordHash(password, hash string) bool {
 }
 func ShowallUser(c *gin.Context) {
 	var query queryStruct
+	var member []memberFullStruct
 	if err := c.ShouldBindJSON(&query); err != nil {
 		fmt.Println(err)
 		return
 	}
-	if len(query.Email) <= 0 {
-		query.Email = "-"
+	var addSearchField =  ""
+	var text = ""
+	if len(query.Username) > 0 {
+		addSearchField = "WHERE username like ?"
+		text = query.Username
+	}else if len(query.Name) > 0{
+		addSearchField = "WHERE firstname or lastname like ?"
+		text = query.Name
+	}else if len(query.Email) > 0{
+		addSearchField = "WHERE email like ?"
+		text = query.Email
+	}else{
+		addSearchField =" WHERE username or firstname or lastname or email like ?"
+		text = ""
 	}
-	if len(query.Name) <= 0 {
-		query.Name = "-"
-	}
-	if len(query.Username) <= 0 {
-		query.Username = "-"
-	}
-	fmt.Println("query", query)
-	querySQL := `SELECT * FROM members 
-	WHERE username like ? 
-	or firstname like ? 
-	or lastname like ?
-	or email like ?`
 
-	var member []memberFullStruct
-	data, err := DB.Query(querySQL,"%"+query.Username+"%","%"+query.Name+"%","%"+query.Name+"%","%"+query.Email+"%")
+	querySQL := `SELECT * FROM members `+ addSearchField +` LIMIT ? OFFSET ?`
+	fmt.Println(querySQL)
+	data , err := DB.Query(querySQL,"%"+text+"%",query.Limit,(query.Page-1)*query.Limit,)
+
+
 	if err != nil {
 		fmt.Println(err)
 	} else {
@@ -116,8 +123,10 @@ func ShowallUser(c *gin.Context) {
 		}
 		c.JSON(http.StatusOK, member)
 	}
+
 	defer data.Close()
 }
+
 func GetUserById(c *gin.Context) {
 	itemid := c.Param("id")
 	var member memberFullStruct
@@ -257,7 +266,14 @@ func DeletedUser(c *gin.Context) {
 
 func CounterMember(c *gin.Context) {
 	var obJectSum counterStruct
-	data, err := DB.Query("SELECT COUNT(*) as 'total_member',COUNT(CASE when role = 'user' then 1 end) as 'user',COUNT(CASE when role = 'admin' then 1 end) as 'admin',COUNT(CASE when status = 'active' then 1 end) as 'status_active',COUNT(CASE when status = 'inactive' then 1 end) as 'status_inactive' FROM members")
+	querySQL := `SELECT 
+	COUNT(*) as 'total_member',
+	COUNT(CASE when role = 'user' then 1 end) as 'user',
+	COUNT(CASE when role = 'admin' then 1 end) as 'admin',
+	COUNT(CASE when status = 'active' then 1 end) as 'status_active',
+	COUNT(CASE when status = 'inactive' then 1 end) as 'status_inactive'
+	 FROM members`
+	data, err := DB.Query(querySQL)
 	if err != nil {
 		fmt.Println(err)
 		c.JSON(http.StatusBadRequest, "failed get data counter")
