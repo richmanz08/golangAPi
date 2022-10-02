@@ -45,14 +45,6 @@ type counterStruct struct {
 	ActiveUser   int32 `json:"status_active"`
 	InActiveUser int32 `json:"status_inactive"`
 }
-type queryStruct struct {
-	Username string `json:"username" `
-	Email    string `json:"email" `
-	Name     string `json:"name" `
-	Limit    string  `json:"limit"`
-	Page      string `json:"page"`
-
-}
 
 func HashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
