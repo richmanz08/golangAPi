@@ -70,11 +70,7 @@ func ShowallUser(c *gin.Context) {
 	getName := c.Request.URL.Query().Get("name")
 	getLimit := c.Request.URL.Query().Get("limit")
 	getPage :=  c.Request.URL.Query().Get("page")
-
-	var query queryStruct
-	query.Username = "-"
-	query.Name = "-"
-	query.Email = "-"
+	 DymanicQueryString := ""
 
 	LimitInteger,err := strconv.Atoi(getLimit)
 	if err != nil{
@@ -86,38 +82,24 @@ func ShowallUser(c *gin.Context) {
 	}
 
 	if len(getUsername) >0{
-		query.Username = getUsername
+		DymanicQueryString = fmt.Sprintf("WHERE username LIKE %s","'%"+getUsername+"%'")
 	}
 	if len(getName) >0{
-		query.Name = getName
+		DymanicQueryString = fmt.Sprintf("WHERE firstname LIKE %s or lastname LIKE %s","'%"+getName+"%'","'%"+getName+"%'")
 	}
 
 	if len(getEmail) >0{
-		query.Email = getEmail
+		DymanicQueryString = fmt.Sprintf("WHERE email LIKE %s","'%"+getEmail+"%'")
 	}
 
-	if len(getUsername) <= 0 && len(getName) <= 0 &&len(getEmail) <= 0 {
-	query.Username = ""
-	query.Name = ""
-	query.Email = ""
-	}
-
-
-
-
-	querySQL := `SELECT * FROM members 
-	WHERE username LIKE ? 
-	or firstname LIKE ? 
-	or lastname LIKE ? 
-	or email LIKE ? 
-	LIMIT ? OFFSET ?`
+	querySQL := fmt.Sprintf("SELECT * FROM members %s LIMIT %d OFFSET %d",DymanicQueryString,LimitInteger,(PageInteger-1)*LimitInteger)
 
 	fmt.Println(querySQL)
 
-	data , err := DB.Query(querySQL,"%"+query.Username+"%","%"+query.Name+"%","%"+query.Name+"%","%"+query.Email+"%",LimitInteger,(PageInteger-1)*LimitInteger,)
+	data , err := DB.Query(querySQL)
 
 	if err != nil {
-		fmt.Println(err)
+		// fmt.Println(err)
 		c.JSON(http.StatusBadRequest,"SQL Error")
 	} else {
 		for data.Next() {
