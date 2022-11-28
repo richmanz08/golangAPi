@@ -9,6 +9,7 @@ import (
 	P "api-webapp/another"
 	C "api-webapp/cloud"
 	COM "api-webapp/components"
+	VIDEO "api-webapp/video"
 	"database/sql"
 	"fmt"
 	"log"
@@ -53,6 +54,8 @@ func main() {
 	router.GET("/testusetoken", P.TestUseToken)
 	router.POST("/upimage-local",P.TestUploadImageOnLocalHost)
 	router.StaticFS("/public",http.Dir("public"))
+	
+	
 
 	//#### Cloud Service ####
 	// router.POST("/cloud-storage-bucket", C.HandleFileUploadToBucket)
@@ -71,6 +74,12 @@ func main() {
 	router.DELETE("/deluserbyid/:id", COM.DeletedUser)
 	router.PUT("/edituser", COM.EditUserById)
 	router.GET("/sumofmember",COM.CounterMember)
+
+	
+	//###### video-streaming ######
+	// router.GET("/movie",COM.VideoStreamingRender)
+	router.GET("/movie/watching/:filename",VIDEO.ServerFileM3U8)
+	// router.GET("/media/{mId:[0-9]+}/stream/", VIDEO.StreamHandle)
 	
 	log.Fatal(router.Run(":8080"))
 
@@ -78,11 +87,13 @@ func main() {
 
 func CORSMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		c.Writer.Header().Set("Content-Type", "video/mp4")
 		c.Writer.Header().Set("Content-Type", "application/json")
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
 		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
 		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT")
+		// c.Writer.Header().Set("Content-Type", "video/mp4")
 		// c.Writer.Header().Set("Content-Type","multipart/form-data")
 		if c.Request.Method == "OPTIONS" {
 			c.AbortWithStatus(204)
