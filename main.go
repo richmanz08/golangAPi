@@ -78,7 +78,7 @@ func main() {
 	
 	//###### video-streaming ######
 	// router.GET("/movie",COM.VideoStreamingRender)
-	router.GET("/movie/watching/:filename",VIDEO.ServerFileM3U8)
+	router.GET("/movie/watching/:filename",VIDEO.ServerFileMedia)
 	// router.GET("/media/{mId:[0-9]+}/stream/", VIDEO.StreamHandle)
 	
 	log.Fatal(router.Run(":8080"))
@@ -87,14 +87,13 @@ func main() {
 
 func CORSMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.Writer.Header().Set("Content-Type", "video/mp4")
+		// c.Writer.Header().Set("Content-Type", "application/octet-stream")
 		c.Writer.Header().Set("Content-Type", "application/json")
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
 		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
 		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT")
-		// c.Writer.Header().Set("Content-Type", "video/mp4")
-		// c.Writer.Header().Set("Content-Type","multipart/form-data")
+		c.Writer.Header().Set("Content-Type","multipart/form-data")
 		if c.Request.Method == "OPTIONS" {
 			c.AbortWithStatus(204)
 			return
