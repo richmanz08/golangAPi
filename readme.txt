@@ -28,4 +28,9 @@ cd เข้าไป redis/redis-stable แล้ว redis-server
 4. Restart computer
 5. check version =>  ใช้ cmd Adminstrator :> ffmpeg -version
 ---- คำสั่ง --- แปลงไฟล์ mp4=> to m3u8 and ts
-ffmpeg -i filename.mp4 -codec: copy -start_number 0 -hls_time 10 -hls_list_size 0 -f hls filename.m3u8
+//example ::: แบบ ultra quality from video
+ffmpeg -i filename.mp4 -codec: copy -start_number 0 -hls_time 10 -hls_list_size 0 -f hls filename.m3u8 
+//example ::: แบบ เลือก quaility 144,360p, 720p,1080p,
+ffmpeg -i input.mp4 -profile:v baseline -level 3.0 -s 640x360 -start_number 0 -hls_time 10 -hls_list_size 0 -f hls index.m3u8
+//example ::: แบบ fix 144p
+ffmpeg -i godzilla-video.mp4 -profile:v baseline -level 3.0 -s 144x100 -start_number 0 -hls_time 10 -hls_list_size 0 -f hls godquality_hd.m3u8
