@@ -49,11 +49,12 @@ func main() {
 
 	// router.POST("/description", COM.Components)
 	// My database api
-
+	
 	router.GET("/testenv", P.TestEnvironment)
 	router.GET("/testusetoken", P.TestUseToken)
 	router.POST("/upimage-local",P.TestUploadImageOnLocalHost)
 	router.StaticFS("/public",http.Dir("public"))
+
 	
 	
 
@@ -93,7 +94,8 @@ func CORSMiddleware() gin.HandlerFunc {
 		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
 		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
 		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT")
-		c.Writer.Header().Set("Content-Type","multipart/form-data")
+		// c.Writer.Header().Set("Content-Type","multipart/form-data")
+		// c.Writer.Header().Set("Content-Type", "application/octet-stream")
 		if c.Request.Method == "OPTIONS" {
 			c.AbortWithStatus(204)
 			return
@@ -105,3 +107,4 @@ func CORSMiddleware() gin.HandlerFunc {
 
 // คำสั่ง [go run .] เพราะมันต้องเรียก package อื่นด้วย
 //หากต้องการ auto run เมื่อ save nodemon --exec go run main.go
+//หากต้องการเคลียแคช go clean -cache -modcache -i -r

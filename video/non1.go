@@ -3,8 +3,11 @@ package video
 import (
 	// "bufio"
 	// "bytes"
+
 	"fmt"
-	"log"
+
+	// "log"
+
 	"strings"
 
 	// "time"
@@ -139,24 +142,27 @@ import (
 // 	// contains filtered or unexported fields
 // }
 // func NewReader(rd io.Reader) *Reader
-func ServerFileMedia(c *gin.Context)() {
+func ServerFileMedia(c *gin.Context)  {
 
-	file_name := c.Param("filename")
+	 file_name := c.Param("filename")
 	fmt.Println("Filename was connected : ",file_name)
 	fileRoot := "public/"
 	typeFile := strings.Split(file_name,".")
 	typeFileName := typeFile[1]
-	fmt.Println("result file type is",typeFileName == "ts")
+	fmt.Println("result file type TS :::",typeFileName == "ts")
+	c.Writer.Header().Set("Content-Type", "application/octet-stream")
+	
 
 	if typeFileName == "ts" {
-		log.Fatal("if 1")
 		c.Writer.Header().Set("Content-Type", "application/octet-stream")
 	}else{
-		log.Fatal("if 2")
 		c.Writer.Header().Set("Content-Type", "application/x-mpegURL")
 	}
 
-	c.File(fileRoot+file_name)
+
+	//  c.File(fileRoot+file_name)
+	
+	 c.File(fileRoot+file_name)
 	// c.Status(http.StatusOK)
 	// f, err := os.Open(fileRoot+file_name)
 	// if err != nil {
