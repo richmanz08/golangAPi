@@ -146,12 +146,11 @@ func ServerFileMedia(c *gin.Context)  {
 
 	 file_name := c.Param("filename")
 	fmt.Println("Filename was connected : ",file_name)
-	fileRoot := "public/"
+	fileRoot := "assets/"
 	typeFile := strings.Split(file_name,".")
 	typeFileName := typeFile[1]
 	fmt.Println("result file type TS :::",typeFileName == "ts")
-	c.Writer.Header().Set("Content-Type", "application/octet-stream")
-	
+
 
 	if typeFileName == "ts" {
 		c.Writer.Header().Set("Content-Type", "application/octet-stream")

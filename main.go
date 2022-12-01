@@ -79,7 +79,7 @@ func main() {
 	
 	//###### video-streaming ######
 	// router.GET("/movie",COM.VideoStreamingRender)
-	router.GET("/movie/watching/:filename",VIDEO.ServerFileMedia)
+	router.GET("/movie/:filename",VIDEO.ServerFileMedia)
 	// router.GET("/media/{mId:[0-9]+}/stream/", VIDEO.StreamHandle)
 	
 	log.Fatal(router.Run(":8080"))
