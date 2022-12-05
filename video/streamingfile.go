@@ -5,6 +5,9 @@ import (
 	// "bytes"
 
 	"fmt"
+	"net/http"
+
+	// "net/http"
 
 	// "log"
 
@@ -144,12 +147,12 @@ import (
 // func NewReader(rd io.Reader) *Reader
 func ServerFileMedia(c *gin.Context)  {
 
-	 file_name := c.Param("filename")
-	fmt.Println("Filename was connected : ",file_name)
+	 file_name := c.Param("mID")
+	// fmt.Println("Filename was connected : ",file_name)
 	fileRoot := "assets/"
 	typeFile := strings.Split(file_name,".")
 	typeFileName := typeFile[1]
-	fmt.Println("result file type TS :::",typeFileName == "ts")
+	// fmt.Println("result file type TS :::",typeFileName == "ts")
 
 
 	if typeFileName == "ts" {
@@ -196,4 +199,55 @@ func ServerFileMedia(c *gin.Context)  {
 
 
 }
+type SubtitleURLStruct struct {
+	MovieID string  `json:"mID"`
+	Language string  `json:"lang"`
+}
+type MediaURLStruct struct {
+MovieID string  `json:"mID"`
+}
+func ServerURLFileSubtitle(c *gin.Context){
+	var subtitleOptions SubtitleURLStruct
+
+	movieID := c.Request.URL.Query().Get("mID")
+	subtitle_lang := c.Request.URL.Query().Get("lang")
+
+	subtitleOptions.MovieID = movieID
+	subtitleOptions.Language = subtitle_lang
+
+	// fmt.Println("movieID :::",movieID)
+	// fmt.Println("subtitle_lang :::",subtitle_lang)
+	// c.JSON(http.StatusOK,subtitleOptions)
+	fileRoot := "assets/"
+	fileName := "example_subtitle" // waiting... db for know name file
+	fileType := ".vtt"
+	fileLang := strings.ToUpper(subtitleOptions.Language)
+	result_file_name := fmt.Sprintf("http://localhost:8080/%s%s%s%s",fileRoot,fileName,fileLang,fileType)
+	// fmt.Println("fileName :::",result_file_name)
+	// fmt.Println("results path :::",fileRoot+result_file_name)
+
+	// c.Writer.Header().Set("Content-Type","WEBVTT")
+	c.JSON(http.StatusOK,result_file_name)
+	// c.File(fileRoot+result_file_name)
+
+}
+
+func ServerURLFileMedia(c *gin.Context){
+	var mediaOptions MediaURLStruct
+	movieID := c.Request.URL.Query().Get("mID")
+	mediaOptions.MovieID = movieID
+
+	fileRoot := "assets/"
+	fileName := "filename" // waiting... db for know name file
+	fileType := ".m3u8"
+
+	result_file_name := fmt.Sprintf("http://localhost:8080/%s%s%s",fileRoot,fileName,fileType)
+	c.JSON(http.StatusOK,result_file_name)
+}
+
+
+
+
+
+
 //https://github.com/aofiee/Music-Streaming-HLS-Go-fiber/blob/main/main.go

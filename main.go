@@ -54,6 +54,7 @@ func main() {
 	router.GET("/testusetoken", P.TestUseToken)
 	router.POST("/upimage-local",P.TestUploadImageOnLocalHost)
 	router.StaticFS("/public",http.Dir("public"))
+	router.StaticFS("/assets",http.Dir("assets"))
 
 	
 	
@@ -79,7 +80,9 @@ func main() {
 	
 	//###### video-streaming ######
 	// router.GET("/movie",COM.VideoStreamingRender)
-	router.GET("/movie/:filename",VIDEO.ServerFileMedia)
+	router.GET("/movie/:mID",VIDEO.ServerFileMedia)
+	router.GET("/media",VIDEO.ServerURLFileMedia)
+	router.GET("/subtitle",VIDEO.ServerURLFileSubtitle)
 	// router.GET("/media/{mId:[0-9]+}/stream/", VIDEO.StreamHandle)
 	
 	log.Fatal(router.Run(":8080"))
@@ -94,7 +97,6 @@ func CORSMiddleware() gin.HandlerFunc {
 		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
 		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
 		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT")
-		// c.Writer.Header().Set("Content-Type","multipart/form-data")
 		// c.Writer.Header().Set("Content-Type", "application/octet-stream")
 		if c.Request.Method == "OPTIONS" {
 			c.AbortWithStatus(204)
