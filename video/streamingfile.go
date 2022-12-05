@@ -145,26 +145,24 @@ import (
 // 	// contains filtered or unexported fields
 // }
 // func NewReader(rd io.Reader) *Reader
-func ServerFileMedia(c *gin.Context)  {
+func ServerFileMedia(c *gin.Context) {
 
-	 file_name := c.Param("mID")
+	file_name := c.Param("mID")
 	// fmt.Println("Filename was connected : ",file_name)
 	fileRoot := "assets/"
-	typeFile := strings.Split(file_name,".")
+	typeFile := strings.Split(file_name, ".")
 	typeFileName := typeFile[1]
 	// fmt.Println("result file type TS :::",typeFileName == "ts")
 
-
 	if typeFileName == "ts" {
 		c.Writer.Header().Set("Content-Type", "application/octet-stream")
-	}else{
+	} else {
 		c.Writer.Header().Set("Content-Type", "application/x-mpegURL")
 	}
 
-
 	//  c.File(fileRoot+file_name)
-	
-	 c.File(fileRoot+file_name)
+
+	c.File(fileRoot + file_name)
 	// c.Status(http.StatusOK)
 	// f, err := os.Open(fileRoot+file_name)
 	// if err != nil {
@@ -176,7 +174,7 @@ func ServerFileMedia(c *gin.Context)  {
 	//   if err != nil {
 	// 	fmt.Println(err)
 	//   }
-	  
+
 	//   fmt.Printf("Playlist object: %+v\n", p)
 	// err = p.Decode(bufio.NewReader(f), false)
 	// defer file.Close()
@@ -192,21 +190,21 @@ func ServerFileMedia(c *gin.Context)  {
 	// fmt.Println(newFile)
 	// c.Status(http.StatusOK,{file:newFile})
 	// wrFile := os.WriteFile(stFile)
-	
-	
+
 	// c.File(file)
 	// c.Status(http.StatusOK,file)
 
-
 }
+
 type SubtitleURLStruct struct {
-	MovieID string  `json:"mID"`
-	Language string  `json:"lang"`
+	MovieID  string `json:"mID"`
+	Language string `json:"lang"`
 }
 type MediaURLStruct struct {
-MovieID string  `json:"mID"`
+	MovieID string `json:"mID"`
 }
-func ServerURLFileSubtitle(c *gin.Context){
+
+func ServerURLFileSubtitle(c *gin.Context) {
 	var subtitleOptions SubtitleURLStruct
 
 	movieID := c.Request.URL.Query().Get("mID")
@@ -222,32 +220,27 @@ func ServerURLFileSubtitle(c *gin.Context){
 	fileName := "example_subtitle" // waiting... db for know name file
 	fileType := ".vtt"
 	fileLang := strings.ToUpper(subtitleOptions.Language)
-	result_file_name := fmt.Sprintf("http://localhost:8080/%s%s%s%s",fileRoot,fileName,fileLang,fileType)
+	result_file_name := fmt.Sprintf("http://localhost:8080/%s%s%s%s", fileRoot, fileName, fileLang, fileType)
 	// fmt.Println("fileName :::",result_file_name)
 	// fmt.Println("results path :::",fileRoot+result_file_name)
 
 	// c.Writer.Header().Set("Content-Type","WEBVTT")
-	c.JSON(http.StatusOK,result_file_name)
+	c.JSON(http.StatusOK, result_file_name)
 	// c.File(fileRoot+result_file_name)
 
 }
 
-func ServerURLFileMedia(c *gin.Context){
+func ServerURLFileMedia(c *gin.Context) {
 	var mediaOptions MediaURLStruct
 	movieID := c.Request.URL.Query().Get("mID")
 	mediaOptions.MovieID = movieID
 
 	fileRoot := "assets/"
-	fileName := "filename" // waiting... db for know name file
+	fileName := "hotd_fhd" // waiting... db for know name file
 	fileType := ".m3u8"
 
-	result_file_name := fmt.Sprintf("http://localhost:8080/%s%s%s",fileRoot,fileName,fileType)
-	c.JSON(http.StatusOK,result_file_name)
+	result_file_name := fmt.Sprintf("http://localhost:8080/%s%s%s", fileRoot, fileName, fileType)
+	c.JSON(http.StatusOK, result_file_name)
 }
-
-
-
-
-
 
 //https://github.com/aofiee/Music-Streaming-HLS-Go-fiber/blob/main/main.go
