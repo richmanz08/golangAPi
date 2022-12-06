@@ -38,3 +38,5 @@ ffmpeg -i godzilla-video.mp4 -profile:v baseline -level 3.0 -s 144x100 -start_nu
 ---- คำสั่ง --- แปลงไฟล์ สร้าง thumbnail =>jpeg
 //example ::: แปลงในทุกๆ 20 วินาที
 ffmpeg -i test.mp4 -vf fps=1/20 thumb%04d.png
+//example ::: แปลงในทุกๆ 5 วินาที
+ffmpeg -i hotd.mp4 -vf fps=1/5 hotd_thumb%d.jpeg;  

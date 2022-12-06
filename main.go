@@ -49,15 +49,12 @@ func main() {
 
 	// router.POST("/description", COM.Components)
 	// My database api
-	
+
 	router.GET("/testenv", P.TestEnvironment)
 	router.GET("/testusetoken", P.TestUseToken)
-	router.POST("/upimage-local",P.TestUploadImageOnLocalHost)
-	router.StaticFS("/public",http.Dir("public"))
-	router.StaticFS("/assets",http.Dir("assets"))
-
-	
-	
+	router.POST("/upimage-local", P.TestUploadImageOnLocalHost)
+	router.StaticFS("/public", http.Dir("public"))
+	router.StaticFS("/assets", http.Dir("assets"))
 
 	//#### Cloud Service ####
 	// router.POST("/cloud-storage-bucket", C.HandleFileUploadToBucket)
@@ -75,16 +72,16 @@ func main() {
 	router.GET("/userbyid/:id", COM.GetUserById)
 	router.DELETE("/deluserbyid/:id", COM.DeletedUser)
 	router.PUT("/edituser", COM.EditUserById)
-	router.GET("/sumofmember",COM.CounterMember)
+	router.GET("/sumofmember", COM.CounterMember)
 
-	
 	//###### video-streaming ######
 	// router.GET("/movie",COM.VideoStreamingRender)
-	router.GET("/movie/:mID",VIDEO.ServerFileMedia)
-	router.GET("/media",VIDEO.ServerURLFileMedia)
-	router.GET("/subtitle",VIDEO.ServerURLFileSubtitle)
+	router.GET("/movie/:mID", VIDEO.ServerFileMedia)
+	router.GET("/media", VIDEO.ServerURLFileMedia)
+	router.GET("/subtitle", VIDEO.ServerURLFileSubtitle)
+	router.GET("/thumbnail/:file", VIDEO.ServerFileThumbnail)
 	// router.GET("/media/{mId:[0-9]+}/stream/", VIDEO.StreamHandle)
-	
+
 	log.Fatal(router.Run(":8080"))
 
 }

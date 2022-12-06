@@ -235,12 +235,19 @@ func ServerURLFileMedia(c *gin.Context) {
 	movieID := c.Request.URL.Query().Get("mID")
 	mediaOptions.MovieID = movieID
 
-	fileRoot := "assets/"
+	fileRoot := "movie/"
 	fileName := "hotd_fhd" // waiting... db for know name file
 	fileType := ".m3u8"
 
 	result_file_name := fmt.Sprintf("http://localhost:8080/%s%s%s", fileRoot, fileName, fileType)
 	c.JSON(http.StatusOK, result_file_name)
+}
+
+func ServerFileThumbnail(c *gin.Context) {
+	c.Writer.Header().Set("Content-Type", "image/jpg")
+	Filename := c.Param("file")
+	fileRoot := "assets/"
+	c.File(fileRoot + Filename)
 }
 
 //https://github.com/aofiee/Music-Streaming-HLS-Go-fiber/blob/main/main.go
