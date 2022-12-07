@@ -2,6 +2,7 @@ package main
 
 import (
 	L "api-webapp/Login"
+	"log"
 	"net/http"
 
 	// M "api-webapp/Member"
@@ -12,7 +13,6 @@ import (
 	VIDEO "api-webapp/video"
 	"database/sql"
 	"fmt"
-	"log"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
@@ -83,7 +83,6 @@ func main() {
 	// router.GET("/media/{mId:[0-9]+}/stream/", VIDEO.StreamHandle)
 
 	log.Fatal(router.Run(":8080"))
-
 }
 
 func CORSMiddleware() gin.HandlerFunc {
@@ -107,3 +106,5 @@ func CORSMiddleware() gin.HandlerFunc {
 // คำสั่ง [go run .] เพราะมันต้องเรียก package อื่นด้วย
 //หากต้องการ auto run เมื่อ save nodemon --exec go run main.go
 //หากต้องการเคลียแคช go clean -cache -modcache -i -r
+// npx kill-port 8080  ##### สำหรับ kill port
+	// netstat -a ####### สำหรับเช็ค port ที่มีในเครื่อง
