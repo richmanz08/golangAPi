@@ -34,6 +34,15 @@ ffmpeg -i filename.mp4 -codec: copy -start_number 0 -hls_time 10 -hls_list_size 
 ffmpeg -i input.mp4 -profile:v baseline -level 3.0 -s 640x360 -start_number 0 -hls_time 10 -hls_list_size 0 -f hls index.m3u8
 //example ::: แบบ fix 144p
 ffmpeg -i godzilla-video.mp4 -profile:v baseline -level 3.0 -s 144x100 -start_number 0 -hls_time 10 -hls_list_size 0 -f hls godquality_hd.m3u8
+//example ::: Adaptive bitrate
+ffmpeg -y -i filename.mp4 \
+  -vf scale=w=640:h=360:force_original_aspect_ratio=decrease -c:a aac -ar 48000 -c:v h264 -profile:v main -crf 20 -sc_threshold 0 -g 48 -keyint_min 48 -hls_time 4 -hls_playlist_type vod  -b:v 800k -maxrate 856k -bufsize 1200k -b:a 96k -hls_segment_filename 360p_%03d.ts 360p.m3u8 \
+  -vf scale=w=842:h=480:force_original_aspect_ratio=decrease -c:a aac -ar 48000 -c:v h264 -profile:v main -crf 20 -sc_threshold 0 -g 48 -keyint_min 48 -hls_time 4 -hls_playlist_type vod -b:v 1400k -maxrate 1498k -bufsize 2100k -b:a 128k -hls_segment_filename 480p_%03d.ts 480p.m3u8 \
+  -vf scale=w=1280:h=720:force_original_aspect_ratio=decrease -c:a aac -ar 48000 -c:v h264 -profile:v main -crf 20 -sc_threshold 0 -g 48 -keyint_min 48 -hls_time 4 -hls_playlist_type vod -b:v 2800k -maxrate 2996k -bufsize 4200k -b:a 128k -hls_segment_filename 720p_%03d.ts 720p.m3u8 \
+  -vf scale=w=1920:h=1080:force_original_aspect_ratio=decrease -c:a aac -ar 48000 -c:v h264 -profile:v main -crf 20 -sc_threshold 0 -g 48 -keyint_min 48 -hls_time 4 -hls_playlist_type vod -b:v 5000k -maxrate 5350k -bufsize 7500k -b:a 192k -hls_segment_filename 1080p_%03d.ts 1080p.m3u8
+
+//https://www.createwithswift.com/converting-video-files-for-hls-streaming/
+
 
 ---- คำสั่ง --- แปลงไฟล์ สร้าง thumbnail =>jpeg
 //example ::: แปลงในทุกๆ 20 วินาที

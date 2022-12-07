@@ -77,7 +77,7 @@ func main() {
 	//###### video-streaming ######
 	// router.GET("/movie",COM.VideoStreamingRender)
 	router.GET("/movie/:mID", VIDEO.ServerFileMedia)
-	router.GET("/media", VIDEO.ServerURLFileMedia)
+	router.GET("/media", VIDEO.ServerURLFileMediaM3U8)
 	router.GET("/subtitle", VIDEO.ServerURLFileSubtitle)
 	router.GET("/thumbnail/:file", VIDEO.ServerFileThumbnail)
 	// router.GET("/media/{mId:[0-9]+}/stream/", VIDEO.StreamHandle)
@@ -107,4 +107,4 @@ func CORSMiddleware() gin.HandlerFunc {
 //หากต้องการ auto run เมื่อ save nodemon --exec go run main.go
 //หากต้องการเคลียแคช go clean -cache -modcache -i -r
 // npx kill-port 8080  ##### สำหรับ kill port
-	// netstat -a ####### สำหรับเช็ค port ที่มีในเครื่อง
+// netstat -a ####### สำหรับเช็ค port ที่มีในเครื่อง

@@ -22,6 +22,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 )
+
 type SubtitleURLStruct struct {
 	MovieID  string `json:"mID"`
 	Language string `json:"lang"`
@@ -29,7 +30,21 @@ type SubtitleURLStruct struct {
 type MediaURLStruct struct {
 	MovieID string `json:"mID"`
 }
+
 var fileRoot = "assets/"
+
+func ServerURLFileMediaM3U8(c *gin.Context) {
+	var mediaOptions MediaURLStruct
+	movieID := c.Request.URL.Query().Get("mID")
+	mediaOptions.MovieID = movieID
+
+	URLRoot := "movie/"
+	fileName := "hotd_fhd" // waiting... db for know name file
+	fileType := ".m3u8"
+
+	result_file_name := fmt.Sprintf("http://localhost:8080/%s%s%s", URLRoot, fileName, fileType)
+	c.JSON(http.StatusOK, result_file_name)
+}
 func ServerFileMedia(c *gin.Context) {
 
 	file_name := c.Param("mID")
@@ -83,19 +98,6 @@ func ServerURLFileSubtitle(c *gin.Context) {
 	// fmt.Println("results path :::",fileRoot+result_file_name)
 
 	// c.Writer.Header().Set("Content-Type","WEBVTT")
-	c.JSON(http.StatusOK, result_file_name)
-}
-
-func ServerURLFileMedia(c *gin.Context) {
-	var mediaOptions MediaURLStruct
-	movieID := c.Request.URL.Query().Get("mID")
-	mediaOptions.MovieID = movieID
-
-	URLRoot := "movie/"
-	fileName := "hotd_fhd" // waiting... db for know name file
-	fileType := ".m3u8"
-
-	result_file_name := fmt.Sprintf("http://localhost:8080/%s%s%s", URLRoot, fileName, fileType)
 	c.JSON(http.StatusOK, result_file_name)
 }
 
