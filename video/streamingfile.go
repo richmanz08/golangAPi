@@ -39,7 +39,7 @@ func ServerURLFileMediaM3U8(c *gin.Context) {
 	mediaOptions.MovieID = movieID
 
 	URLRoot := "movie/"
-	fileName := "hotd_fhd" // waiting... db for know name file
+	fileName := "hotd_bandwidth" // waiting... db for know name file
 	fileType := ".m3u8"
 
 	result_file_name := fmt.Sprintf("http://localhost:8080/%s%s%s", URLRoot, fileName, fileType)
