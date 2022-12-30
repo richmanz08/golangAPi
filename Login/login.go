@@ -2,11 +2,9 @@ package login
 
 import (
 	"database/sql"
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"golang.org/x/crypto/bcrypt"
 )
 
 var DB *sql.DB
@@ -85,88 +83,88 @@ type loginParamsStruct struct {
 // 	c.JSON(http.StatusOK, userData)
 // }
 
-func HashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
-	return string(bytes), err
-}
-func CheckPasswordHash(password, hash string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-	return err == nil
-}
+// func HashPassword(password string) (string, error) {
+// 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+// 	return string(bytes), err
+// }
+// func CheckPasswordHash(password, hash string) bool {
+// 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+// 	return err == nil
+// }
 
-func Login(c *gin.Context) {
-	var m memberFullStruct
-	var u loginParamsStruct
+// func Login(c *gin.Context) {
+// 	var m memberFullStruct
+// 	var u loginParamsStruct
 
-	if err := c.ShouldBindJSON(&u); err != nil {
-		c.JSON(http.StatusBadRequest, "login failed")
-		return
-	}
-	data, err := DB.Query("SELECT * FROM members WHERE username=?  ", u.Username)
-	if err != nil {
-		fmt.Println("connect table fail")
-	}
-	defer data.Close()
-	fmt.Println()
+// 	if err := c.ShouldBindJSON(&u); err != nil {
+// 		c.JSON(http.StatusBadRequest, "login failed")
+// 		return
+// 	}
+// 	data, err := DB.Query("SELECT * FROM members WHERE username=?  ", u.Username)
+// 	if err != nil {
+// 		fmt.Println("connect table fail")
+// 	}
+// 	defer data.Close()
+// 	fmt.Println()
 	
 
-	var checkState bool
+// 	var checkState bool
 
-	for data.Next() {
+// 	for data.Next() {
 
-		var new memberFullStruct
-		err = data.Scan(&new.AccountId,
-			&new.Username,
-			&new.Password,
-			&new.Mail,
-			&new.Name,
-			&new.Surname,
-			&new.Phone,
-			&new.Role)
+// 		var new memberFullStruct
+// 		err = data.Scan(&new.AccountId,
+// 			&new.Username,
+// 			&new.Password,
+// 			&new.Mail,
+// 			&new.Name,
+// 			&new.Surname,
+// 			&new.Phone,
+// 			&new.Role)
 
-		if err != nil {
-			panic(err.Error())
-		}
+// 		if err != nil {
+// 			panic(err.Error())
+// 		}
 
-		if new.Username == u.Username {
-			MatchingPassword := CheckPasswordHash(u.Password, new.Password)
-			// fmt.Print(match)
+// 		if new.Username == u.Username {
+// 			MatchingPassword := CheckPasswordHash(u.Password, new.Password)
+// 			// fmt.Print(match)
 
-			if MatchingPassword == true  {
-				m.AccountId = new.AccountId
-				m.Username = new.Username
-				m.Password = new.Password
-				m.Mail = new.Mail
-				m.Name = new.Name
-				m.Surname = new.Surname
-				m.Phone = new.Phone
-				m.Role = new.Role
-				ts, err := CreateToken(uint64(m.AccountId))
-				if err != nil {
-					c.JSON(http.StatusUnprocessableEntity, err.Error())
-					return
-				}
-				saveErr := CreateAuth(uint64(m.AccountId), ts)
-				if saveErr != nil {
-					c.JSON(http.StatusUnprocessableEntity, saveErr.Error())
-				}
-				m.Token = &TokenStruct{
-					AccessToken: ts.AccessToken, RefreshToken: ts.RefreshToken,
-				}
+// 			if MatchingPassword == true  {
+// 				m.AccountId = new.AccountId
+// 				m.Username = new.Username
+// 				m.Password = new.Password
+// 				m.Mail = new.Mail
+// 				m.Name = new.Name
+// 				m.Surname = new.Surname
+// 				m.Phone = new.Phone
+// 				m.Role = new.Role
+// 				ts, err := CreateToken(uint64(m.AccountId))
+// 				if err != nil {
+// 					c.JSON(http.StatusUnprocessableEntity, err.Error())
+// 					return
+// 				}
+// 				saveErr := CreateAuth(uint64(m.AccountId), ts)
+// 				if saveErr != nil {
+// 					c.JSON(http.StatusUnprocessableEntity, saveErr.Error())
+// 				}
+// 				m.Token = &TokenStruct{
+// 					AccessToken: ts.AccessToken, RefreshToken: ts.RefreshToken,
+// 				}
 				
-				checkState = true
-				c.JSON(http.StatusOK, m)
+// 				checkState = true
+// 				c.JSON(http.StatusOK, m)
 
-			} 
+// 			} 
 
-		} 
+// 		} 
 	
-	}
-	if checkState == false {
-		c.JSON(http.StatusBadRequest, "login failed")
-	}
+// 	}
+// 	if checkState == false {
+// 		c.JSON(http.StatusBadRequest, "login failed")
+// 	}
 
-}
+// }
 
 func Logout(c *gin.Context) {
 	au, err := ExtractTokenMetadata(c.Request)
