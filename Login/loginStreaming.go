@@ -12,11 +12,13 @@ type responseVerifyPIN struct {
 	AccountId int32   `json:"account_id" `
 	UserIndex string `json:"user_idx"`
 	Username  string `json:"username" `
+	ImageURL  string `json:"image_url"`
 }
 type userJsonStructofJWT struct {
 	UserIndex string `json:"user_idx"`
 	Username  string `json:"username" `
 	PIN       string `json:"pin"`
+	ImageURL  string `json:"image_url"`
 }
 
 type userScanTableStruct struct {
@@ -37,33 +39,28 @@ type responseStructLogin struct {
 	AccountId int32        `json:"account_id" `
 	Email     string       `json:"email" `
 	Role      string       `json:"role" `
+	UserJWT string  `json:"users_jwt"`
 	Token     *TokenStruct `json:"token"`
 }
-
+ 
 type accountFullStruct struct {
 	AccountId int32  `json:"account_id" `
 	Password  string `json:"password" `
-	Username  string `json:"username" `
 	Email     string `json:"mail" `
 	Firstname string `json:"firstname" `
 	Lastname  string `json:"lastname" `
 	Role      string `json:"role" `
 	Phone     string `json:"phone"`
 	Status    string `json:"status"`
-	ImageURL  string `Json:"image_path"`
 }
 
-func HashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
-	return string(bytes), err
-}
-func CheckPasswordHash(password, hash string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-	return err == nil
-}
+
 
 func LoginStreamingAccount(c *gin.Context) {
 	var params handleParamsRouteLoginStruct
+	var account responseStructLogin
+	var newRowItem accountFullStruct
+
 
 	if err := c.ShouldBindJSON(&params); err != nil {
 		c.JSON(http.StatusBadRequest, "login failed")
@@ -76,14 +73,11 @@ func LoginStreamingAccount(c *gin.Context) {
 	}
 	defer rows.Close()
 
-	var account responseStructLogin
-	var newRowItem accountFullStruct
 
 	for rows.Next() {
 
 		err = rows.Scan(
 			&newRowItem.AccountId,
-			&newRowItem.Username,
 			&newRowItem.Password,
 			&newRowItem.Email,
 			&newRowItem.Firstname,
@@ -91,7 +85,6 @@ func LoginStreamingAccount(c *gin.Context) {
 			&newRowItem.Phone,
 			&newRowItem.Role,
 			&newRowItem.Status,
-			&newRowItem.ImageURL,
 		)
 
 		if err != nil {
@@ -111,9 +104,14 @@ func LoginStreamingAccount(c *gin.Context) {
 		return
 	}
 
-	account.AccountId = newRowItem.AccountId
-	account.Email = newRowItem.Email
-	account.Role = newRowItem.Role
+
+	userOfAccount,err := QueryDataAccount(newRowItem.AccountId);
+	if err != nil{
+		c.JSON(http.StatusBadRequest, err)
+		return	
+	} 
+
+
 	token, err := CreateToken(uint64(account.AccountId))
 	if err != nil {
 		c.JSON(http.StatusUnprocessableEntity, err.Error())
@@ -127,49 +125,35 @@ func LoginStreamingAccount(c *gin.Context) {
 		AccessToken: token.AccessToken, RefreshToken: token.RefreshToken,
 	}
 
+	account.AccountId = newRowItem.AccountId
+	account.Email = newRowItem.Email
+	account.Role = newRowItem.Role
+	account.UserJWT = userOfAccount.UserJWT
+
 	c.JSON(http.StatusOK, account)
 
 }
-
-
 
 func VerifyPINStreamingAccount(c *gin.Context) {
 	var params handleParamsRoutePINStruct
 	var matchUser userJsonStructofJWT
 	var stopedLoop bool = false
 	var res responseVerifyPIN
-	var ResultOfQuery userScanTableStruct
+
 	message_error1 := "Verify PIN Failed"
 
 	if err := c.ShouldBindJSON(&params); err != nil {
 		c.JSON(http.StatusBadRequest, message_error1)
 		return
 	}
-	rows, err := DB.Query("SELECT * FROM users WHERE account_id=?  ", params.AccountId)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, "error")
-		return
-	}
-	defer rows.Close()
 
-	for rows.Next(){
-		err = rows.Scan(
-			&ResultOfQuery.UserID,
-			&ResultOfQuery.AccountId,
-			&ResultOfQuery.UserJWT,
-		)		
-		if err != nil {
-			c.JSON(http.StatusBadRequest, "error")
-			return
-		}
-	}
+	userOfAccount,err := QueryDataAccount(params.AccountId);
+	if err != nil{
+		c.JSON(http.StatusBadRequest, err)
+		return	
+	} 
 
-	if len(ResultOfQuery.UserJWT) == 0{
-		c.JSON(http.StatusBadRequest, message_error1)
-		return
-	}
-
-	jwtUser := ResultOfQuery.UserJWT
+	jwtUser := userOfAccount.UserJWT
 	claims := jwt.MapClaims{}
 	jsonJWT, err := jwt.ParseWithClaims(jwtUser, claims, func(token *jwt.Token) (interface{}, error) {
 		return []byte(MY_APPLICATION_JWT_KEY), nil
@@ -199,6 +183,8 @@ func VerifyPINStreamingAccount(c *gin.Context) {
 						info.Username = fmt.Sprintf("%v", val)
 					} else if key == "pin" {
 						info.PIN = fmt.Sprintf("%v", val)
+					}else if  key == "image_url"{
+						info.ImageURL = fmt.Sprintf("%v", val)
 					}
 				}
 			}
@@ -208,6 +194,7 @@ func VerifyPINStreamingAccount(c *gin.Context) {
 				matchUser.PIN = info.PIN
 				matchUser.Username = info.Username
 				matchUser.UserIndex = info.UserIndex
+				matchUser.ImageURL = info.ImageURL
 				stopedLoop = true
 	
 			}
@@ -225,6 +212,48 @@ func VerifyPINStreamingAccount(c *gin.Context) {
 	res.AccountId = params.AccountId
 	res.UserIndex = matchUser.UserIndex
 	res.Username = matchUser.Username
-
+	res.ImageURL = matchUser.ImageURL
 	c.JSON(http.StatusOK, res)
+}
+
+
+// ----------------- Function duplicate Helper common 
+
+func HashPassword(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+	return string(bytes), err
+}
+func CheckPasswordHash(password, hash string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	return err == nil
+}
+
+func QueryDataAccount(account_id int32)(*userScanTableStruct,error){
+	var Users userScanTableStruct
+	rows, err := DB.Query("SELECT * FROM users WHERE account_id=?", account_id)
+	if err != nil {
+		return  nil,err
+	}
+	defer rows.Close()
+
+	for rows.Next(){
+		err = rows.Scan(
+			&Users.UserID,
+			&Users.AccountId,
+			&Users.UserJWT,
+		)		
+		if err != nil {
+			return nil,err
+		}
+	}
+
+	if len(Users.UserJWT) == 0{
+		return nil,err
+	}
+
+	return &userScanTableStruct{
+		UserID :Users.UserID,
+		AccountId :Users.AccountId,
+		UserJWT:Users.UserJWT,
+	},nil
 }
