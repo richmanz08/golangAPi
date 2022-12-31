@@ -26,21 +26,21 @@ type User struct {
 	Password string `json:"password"`
 	Phone    string `json:"phone"`
 }
-type memberFullStruct struct {
-	AccountId int32        `json:"account_id" `
-	Username  string       `json:"username" `
-	Password  string       `json:"password" `
-	Mail      string       `json:"mail" `
-	Name      string       `json:"name" `
-	Surname   string       `json:"surname" `
-	Phone     string       `json:"phone"`
-	Role      string       `json:"role" `
-	Token     *TokenStruct `json:"token"`
-}
-type loginParamsStruct struct {
-	Username string `json:"username"  binding:"required"`
-	Password string `json:"password"  binding:"required"`
-}
+// type memberFullStruct struct {
+// 	AccountId int32        `json:"account_id" `
+// 	Username  string       `json:"username" `
+// 	Password  string       `json:"password" `
+// 	Mail      string       `json:"mail" `
+// 	Name      string       `json:"name" `
+// 	Surname   string       `json:"surname" `
+// 	Phone     string       `json:"phone"`
+// 	Role      string       `json:"role" `
+// 	Token     *TokenStruct `json:"token"`
+// }
+// type loginParamsStruct struct {
+// 	Username string `json:"username"  binding:"required"`
+// 	Password string `json:"password"  binding:"required"`
+// }
 
 // var user = User{
 // 	ID:       1,

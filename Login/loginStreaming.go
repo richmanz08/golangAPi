@@ -1,20 +1,37 @@
 package login
 
 import (
+	"fmt"
 	"net/http"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 )
+type responseVerifyPIN struct {
+	AccountId int32   `json:"account_id" `
+	UserIndex string `json:"user_idx"`
+	Username  string `json:"username" `
+}
+type userJsonStructofJWT struct {
+	UserIndex string `json:"user_idx"`
+	Username  string `json:"username" `
+	PIN       string `json:"pin"`
+}
 
+type userScanTableStruct struct {
+	UserID int32 `json:"idusers" binding:"required"`
+	AccountId int32  `json:"account_id" binding:"required"`
+	UserJWT string  `json:"users_jwt" binding:"required"`
+}
 type handleParamsRouteLoginStruct struct {
 	Email    string `json:"email"  binding:"required"`
 	Password string `json:"password"  binding:"required"`
 }
 type handleParamsRoutePINStruct struct {
 	AccountId int32  `json:"account_id" binding:"required"`
-	UserIndex string `json:"user_index"  binding:"required"`
-	PIN string `json:"pin"  binding:"required"`
+	UserIndex string `json:"user_idx"  binding:"required"`
+	PIN       string `json:"pin"  binding:"required"`
 }
 type responseStructLogin struct {
 	AccountId int32        `json:"account_id" `
@@ -82,7 +99,7 @@ func LoginStreamingAccount(c *gin.Context) {
 			return
 		}
 	}
-	if len(newRowItem.Email) == 0  {
+	if len(newRowItem.Email) == 0 {
 		c.JSON(http.StatusBadRequest, "user not found")
 		return
 	}
@@ -111,14 +128,103 @@ func LoginStreamingAccount(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, account)
-	
+
 }
 
-func VerifyPINStreamingAccount(c *gin.Context){
+
+
+func VerifyPINStreamingAccount(c *gin.Context) {
 	var params handleParamsRoutePINStruct
+	var matchUser userJsonStructofJWT
+	var stopedLoop bool = false
+	var res responseVerifyPIN
+	var ResultOfQuery userScanTableStruct
+	message_error1 := "Verify PIN Failed"
 
 	if err := c.ShouldBindJSON(&params); err != nil {
-		c.JSON(http.StatusBadRequest, "Verify PIN Failed")
+		c.JSON(http.StatusBadRequest, message_error1)
 		return
 	}
+	rows, err := DB.Query("SELECT * FROM users WHERE account_id=?  ", params.AccountId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, "error")
+		return
+	}
+	defer rows.Close()
+
+	for rows.Next(){
+		err = rows.Scan(
+			&ResultOfQuery.UserID,
+			&ResultOfQuery.AccountId,
+			&ResultOfQuery.UserJWT,
+		)		
+		if err != nil {
+			c.JSON(http.StatusBadRequest, "error")
+			return
+		}
+	}
+
+	if len(ResultOfQuery.UserJWT) == 0{
+		c.JSON(http.StatusBadRequest, message_error1)
+		return
+	}
+
+	jwtUser := ResultOfQuery.UserJWT
+	claims := jwt.MapClaims{}
+	jsonJWT, err := jwt.ParseWithClaims(jwtUser, claims, func(token *jwt.Token) (interface{}, error) {
+		return []byte(MY_APPLICATION_JWT_KEY), nil
+	})
+	if err != nil {
+		c.JSON(http.StatusBadRequest, message_error1)
+		return
+	}
+
+	claims, okr := jsonJWT.Claims.(jwt.MapClaims)
+
+	if !okr {
+		fmt.Println("error okr")
+	}
+	listUserArray := claims["user_list"].([]interface{})
+
+
+	for _, item := range listUserArray {
+		if !stopedLoop {
+		
+			var info userJsonStructofJWT
+			if rec, ok := item.(map[string]interface{}); ok {
+				for key, val := range rec {
+					if key == "usr_idx" {
+						info.UserIndex = fmt.Sprintf("%v", val)
+					} else if key == "username" {
+						info.Username = fmt.Sprintf("%v", val)
+					} else if key == "pin" {
+						info.PIN = fmt.Sprintf("%v", val)
+					}
+				}
+			}
+			var a bool = info.UserIndex == params.UserIndex
+			var b bool = info.PIN == params.PIN
+			if a && b {
+				matchUser.PIN = info.PIN
+				matchUser.Username = info.Username
+				matchUser.UserIndex = info.UserIndex
+				stopedLoop = true
+	
+			}
+		}
+
+	}
+
+	if len(matchUser.Username) == 0 {
+		c.JSON(http.StatusBadRequest, message_error1)
+		return
+	}
+
+
+	
+	res.AccountId = params.AccountId
+	res.UserIndex = matchUser.UserIndex
+	res.Username = matchUser.Username
+
+	c.JSON(http.StatusOK, res)
 }

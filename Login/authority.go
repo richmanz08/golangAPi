@@ -29,7 +29,7 @@ type TokenStruct struct {
 	AccessToken string
 	RefreshToken string
 }
-
+const MY_APPLICATION_JWT_KEY = "your-256-bit-secret"
 func CreateToken(userid uint64) (*TokenDetails, error) {
 	td := &TokenDetails{}
 	td.AtExpires = time.Now().Add(time.Minute * 15).Unix()
