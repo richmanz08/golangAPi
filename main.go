@@ -45,7 +45,7 @@ func main() {
 	//Login Authority Project Virify by jwt token
 
 	// router.POST("/login", L.Login)
-	// router.POST("/logout", L.Logout)
+	router.POST("/logout", L.Logout)
 	router.POST("/login-streaming",L.LoginStreamingAccount)
 	router.POST("/verify-pin",L.VerifyPINStreamingAccount)
 	// router.POST("/description", COM.Components)
