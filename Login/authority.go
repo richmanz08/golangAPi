@@ -32,7 +32,7 @@ type TokenStruct struct {
 const MY_APPLICATION_JWT_KEY = "your-256-bit-secret"
 func CreateToken(userid uint64) (*TokenDetails, error) {
 	td := &TokenDetails{}
-	td.AtExpires = time.Now().Add(time.Minute * 15).Unix()
+	td.AtExpires = time.Now().Add((time.Hour * 10000)).Unix()
 	td.AccessUuid = uuid.NewV4().String()
 
 	td.RtExpires = time.Now().Add(time.Hour * 24 * 7).Unix()
@@ -40,7 +40,7 @@ func CreateToken(userid uint64) (*TokenDetails, error) {
 
 	var err error
 	//Creating Access Token
-	os.Setenv("ACCESS_SECRET", MY_APPLICATION_JWT_KEY) //this should be in an env file
+	// os.Setenv("ACCESS_SECRET", MY_APPLICATION_JWT_KEY) //this should be in an env file
 	atClaims := jwt.MapClaims{}
 	atClaims["authorized"] = true
 	atClaims["access_uuid"] = td.AccessUuid
@@ -52,7 +52,7 @@ func CreateToken(userid uint64) (*TokenDetails, error) {
 		return nil, err
 	}
 	//Creating Refresh Token
-	os.Setenv("REFRESH_SECRET", MY_APPLICATION_JWT_KEY) //this should be in an env file
+	// os.Setenv("REFRESH_SECRET", MY_APPLICATION_JWT_KEY) //this should be in an env file
 	rtClaims := jwt.MapClaims{}
 	rtClaims["refresh_uuid"] = td.RefreshUuid
 	rtClaims["user_id"] = userid

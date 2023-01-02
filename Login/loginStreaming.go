@@ -2,20 +2,25 @@ package login
 
 import (
 	"net/http"
+	"os"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type responseVerifyPIN struct {
 	AccountId int32  `json:"account_id" `
-	UserIndex string `json:"user_idx"`
+	UserIndex int32 `json:"user_idx"`
 	Username  string `json:"username" `
 	ImageURL  string `json:"image_url"`
 }
+type responseVerifyPINformatJWT struct {
+	JwtoffVerifyPIN string `json:"access_jwt_pin"`
+}
 
 type myUserStruct struct {
-	UserIndex string `json:"user_idx"`
+	UserIndex int32 `json:"user_idx"`
 	Username  string `json:"username" `
 	ImageURL  string `json:"image_url"`
 }
@@ -23,7 +28,7 @@ type myUserStruct struct {
 type userScanTableStruct struct {
 	UserID    int32  `json:"idusers" binding:"required"`
 	AccountId int32  `json:"account_id" binding:"required"`
-	UserIndex string `json:"user_idx" binding:"required"`
+	UserIndex int32 `json:"user_idx" binding:"required"`
 	Username  string `json:"username" binding:"required"`
 	ImageURL  string `json:"image_url" binding:"required"`
 	PIN       string `json:"pin" binding:"required"`
@@ -134,7 +139,7 @@ func VerifyPINStreamingAccount(c *gin.Context) {
 	var params handleParamsRoutePINStruct
 	// var matchUser userJsonStructofJWT
 	// var stopedLoop bool = false
-	var res responseVerifyPIN
+	var res responseVerifyPINformatJWT
 
 	message_error1 := "Verify PIN Failed"
 
@@ -206,11 +211,21 @@ func VerifyPINStreamingAccount(c *gin.Context) {
 	// 	c.JSON(http.StatusBadRequest, message_error1)
 	// 	return
 	// }
-
-	res.AccountId = userOfAccount.AccountId
-	res.UserIndex = userOfAccount.UserIndex
-	res.Username = userOfAccount.Username
-	res.ImageURL = userOfAccount.ImageURL
+ jwtOfaccessPINverify,err :=	CreateJWTofPIN(responseVerifyPIN{
+		AccountId: userOfAccount.AccountId,
+		UserIndex: userOfAccount.UserIndex,
+		Username: userOfAccount.Username,
+		ImageURL: userOfAccount.ImageURL,
+	})
+	if err != nil {
+		c.JSON(http.StatusBadRequest, "Generate JWT Failed")
+		return
+	}
+res.JwtoffVerifyPIN = jwtOfaccessPINverify
+	// res.AccountId = userOfAccount.AccountId
+	// res.UserIndex = userOfAccount.UserIndex
+	// res.Username = userOfAccount.Username
+	// res.ImageURL = userOfAccount.ImageURL
 	c.JSON(http.StatusOK, res)
 }
 
@@ -281,4 +296,19 @@ func QueryDataAllAccount(account_id int32) ([]myUserStruct, error) {
 		newArray = append(newArray, myUserStruct{UserIndex: Users.UserIndex, Username: Users.Username, ImageURL: Users.ImageURL})
 	}
 	return newArray, nil
+}
+
+func CreateJWTofPIN(data responseVerifyPIN)(string,error){
+	optionJWT := jwt.MapClaims{}
+	optionJWT["account_id"] = data.AccountId
+	optionJWT["user_idx"] =data.UserIndex 
+	optionJWT["username"] = data.Username
+	optionJWT["image_url"] = data.ImageURL
+	groupOption := jwt.NewWithClaims(jwt.SigningMethodHS256, optionJWT)
+
+	jwt, err := groupOption.SignedString([]byte(os.Getenv("ACCESS_SECRET")))
+	if err != nil {
+		return err.Error(), err
+	}
+	return jwt,nil
 }
