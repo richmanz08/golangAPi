@@ -1,8 +1,11 @@
 package login
 
 import (
+	"fmt"
+	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
@@ -11,16 +14,17 @@ import (
 
 type responseVerifyPIN struct {
 	AccountId int32  `json:"account_id" `
-	UserIndex int32 `json:"user_idx"`
+	UserIndex int32  `json:"user_idx"`
 	Username  string `json:"username" `
 	ImageURL  string `json:"image_url"`
+	Expire    bool   `json:"account_is_expire"`
 }
 type responseVerifyPINformatJWT struct {
 	JwtoffVerifyPIN string `json:"access_jwt_pin"`
 }
 
 type myUserStruct struct {
-	UserIndex int32 `json:"user_idx"`
+	UserIndex int32  `json:"user_idx"`
 	Username  string `json:"username" `
 	ImageURL  string `json:"image_url"`
 }
@@ -28,7 +32,7 @@ type myUserStruct struct {
 type userScanTableStruct struct {
 	UserID    int32  `json:"idusers" binding:"required"`
 	AccountId int32  `json:"account_id" binding:"required"`
-	UserIndex int32 `json:"user_idx" binding:"required"`
+	UserIndex int32  `json:"user_idx" binding:"required"`
 	Username  string `json:"username" binding:"required"`
 	ImageURL  string `json:"image_url" binding:"required"`
 	PIN       string `json:"pin" binding:"required"`
@@ -46,6 +50,7 @@ type responseStructLogin struct {
 	AccountId int32          `json:"account_id" `
 	Email     string         `json:"email" `
 	Role      string         `json:"role" `
+	Reneval   string         `json:"reneval" `
 	UserList  []myUserStruct `json:"user_list" `
 	Token     *TokenStruct   `json:"token"`
 }
@@ -59,6 +64,11 @@ type accountFullStruct struct {
 	Role      string `json:"role" `
 	Phone     string `json:"phone"`
 	Status    string `json:"status"`
+	Reneval   string `json:"reneval"`
+}
+
+type checkReneval struct {
+	Reneval string `json:"reneval" `
 }
 
 func LoginStreamingAccount(c *gin.Context) {
@@ -88,6 +98,7 @@ func LoginStreamingAccount(c *gin.Context) {
 			&newRowItem.Phone,
 			&newRowItem.Role,
 			&newRowItem.Status,
+			&newRowItem.Reneval,
 		)
 
 		if err != nil {
@@ -99,7 +110,7 @@ func LoginStreamingAccount(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, "user not found")
 		return
 	}
-
+	log.Println(newRowItem)
 	matchingPassword := CheckPasswordHash(params.Password, newRowItem.Password)
 
 	if !matchingPassword {
@@ -128,6 +139,7 @@ func LoginStreamingAccount(c *gin.Context) {
 
 	account.AccountId = newRowItem.AccountId
 	account.Email = newRowItem.Email
+	account.Reneval = newRowItem.Reneval
 	account.Role = newRowItem.Role
 	account.UserList = userOfAccount
 
@@ -137,8 +149,6 @@ func LoginStreamingAccount(c *gin.Context) {
 
 func VerifyPINStreamingAccount(c *gin.Context) {
 	var params handleParamsRoutePINStruct
-	// var matchUser userJsonStructofJWT
-	// var stopedLoop bool = false
 	var res responseVerifyPINformatJWT
 
 	message_error1 := "Verify PIN Failed"
@@ -148,84 +158,32 @@ func VerifyPINStreamingAccount(c *gin.Context) {
 		return
 	}
 
-	userOfAccount, err := QueryDataAccount(params.AccountId, params.UserIndex)
+	 checkReneval := QueryGetRenevalofAccount(params.AccountId)
+	 userOfAccount, err := QueryDataAccount(params.AccountId, params.UserIndex)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err)
 		return
 	}
-	// fmt.Println(HashPassword(params.PIN))
+
 	verifyPin := CheckPasswordHash(params.PIN, userOfAccount.PIN)
 	if !verifyPin {
 		c.JSON(http.StatusBadRequest, " PIN not match")
 		return
 	}
-	// jwtUser := userOfAccount.UserJWT
-	// claims := jwt.MapClaims{}
-	// jsonJWT, err := jwt.ParseWithClaims(jwtUser, claims, func(token *jwt.Token) (interface{}, error) {
-	// 	return []byte(MY_APPLICATION_JWT_KEY), nil
-	// })
-	// if err != nil {
-	// 	c.JSON(http.StatusBadRequest, message_error1)
-	// 	return
-	// }
 
-	// claims, okr := jsonJWT.Claims.(jwt.MapClaims)
-
-	// if !okr {
-	// 	fmt.Println("error okr")
-	// }
-	// listUserArray := claims["user_list"].([]interface{})
-
-	// for _, item := range listUserArray {
-	// 	if !stopedLoop {
-
-	// 		var info userJsonStructofJWT
-	// 		if rec, ok := item.(map[string]interface{}); ok {
-	// 			for key, val := range rec {
-	// 				if key == "usr_idx" {
-	// 					info.UserIndex = fmt.Sprintf("%v", val)
-	// 				} else if key == "username" {
-	// 					info.Username = fmt.Sprintf("%v", val)
-	// 				} else if key == "pin" {
-	// 					info.PIN = fmt.Sprintf("%v", val)
-	// 				}else if  key == "image_url"{
-	// 					info.ImageURL = fmt.Sprintf("%v", val)
-	// 				}
-	// 			}
-	// 		}
-	// 		var a bool = info.UserIndex == params.UserIndex
-	// 		var b bool = info.PIN == params.PIN
-	// 		if a && b {
-	// 			matchUser.PIN = info.PIN
-	// 			matchUser.Username = info.Username
-	// 			matchUser.UserIndex = info.UserIndex
-	// 			matchUser.ImageURL = info.ImageURL
-	// 			stopedLoop = true
-
-	// 		}
-	// 	}
-
-	// }
-
-	// if len(matchUser.Username) == 0 {
-	// 	c.JSON(http.StatusBadRequest, message_error1)
-	// 	return
-	// }
- jwtOfaccessPINverify,err :=	CreateJWTofPIN(responseVerifyPIN{
+	jwtOfaccessPINverify, err := CreateJWTofPIN(responseVerifyPIN{
 		AccountId: userOfAccount.AccountId,
 		UserIndex: userOfAccount.UserIndex,
-		Username: userOfAccount.Username,
-		ImageURL: userOfAccount.ImageURL,
+		Username:  userOfAccount.Username,
+		ImageURL:  userOfAccount.ImageURL,
+		Expire:    checkReneval,
 	})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, "Generate JWT Failed")
 		return
 	}
-res.JwtoffVerifyPIN = jwtOfaccessPINverify
-	// res.AccountId = userOfAccount.AccountId
-	// res.UserIndex = userOfAccount.UserIndex
-	// res.Username = userOfAccount.Username
-	// res.ImageURL = userOfAccount.ImageURL
+	res.JwtoffVerifyPIN = jwtOfaccessPINverify
+
 	c.JSON(http.StatusOK, res)
 }
 
@@ -238,6 +196,49 @@ func HashPassword(password string) (string, error) {
 func CheckPasswordHash(password, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	return err == nil
+}
+
+func QueryGetRenevalofAccount(account_id int32) bool {
+	var RenevalDate checkReneval
+	current_date := time.Now()
+	rows, err := DB.Query("SELECT reneval FROM accounts WHERE account_id=?", account_id)
+	if err != nil {
+		return false
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		err = rows.Scan(&RenevalDate.Reneval)
+		if err != nil {
+			return false
+		}
+	}
+	// loc, _ := time.LoadLocation("UTC")
+	// createdAt := time.Now().In(loc).Add(2 * time.Hour)
+	// now := time.Now()
+	// fmt.Println(now.Format(time.UnixDate))
+	// fmt.Println(createdAt)
+
+	date, error := time.Parse("2006-01-02 15:04:05", RenevalDate.Reneval)
+
+	if error != nil {
+		fmt.Println(error)
+		// return
+	}
+	// log.Println("Value of date: ", date)
+	// myTime, err := time.Parse("2 Jan 06 03:04PM", "10 Nov 10 11:00PM")
+	// 	myTime, err := time.Parse("2023-01-01 21:01:22", RenevalDate.Reneval)
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// now := time.Now()
+	// fmt.Println(current_date.Before(date))
+	// 	log.Println("TIME NOW :::",current_date.Format("2006-01-02 15:04:05"))
+	// 	log.Println("RENEVAL CURRENT :::",date.Add(time.Hour*720))
+	// fmt.Println("Expire is",current_date.After(date.Add(time.Hour*720)))
+	// log.Println("TIME NOW :::",current_date.Format("2006-01-02 15:04:05"))
+	// log.Println("RENEVAL CURRENT :::",date)
+	return current_date.After(date.Add(time.Hour * 720))
 }
 
 func QueryDataAccount(account_id, usr_idx int32) (*userScanTableStruct, error) {
@@ -298,17 +299,119 @@ func QueryDataAllAccount(account_id int32) ([]myUserStruct, error) {
 	return newArray, nil
 }
 
-func CreateJWTofPIN(data responseVerifyPIN)(string,error){
+func CreateJWTofPIN(data responseVerifyPIN) (string, error) {
 	optionJWT := jwt.MapClaims{}
 	optionJWT["account_id"] = data.AccountId
-	optionJWT["user_idx"] =data.UserIndex 
+	optionJWT["user_idx"] = data.UserIndex
 	optionJWT["username"] = data.Username
 	optionJWT["image_url"] = data.ImageURL
+	optionJWT["account_is_expire"] = data.Expire
 	groupOption := jwt.NewWithClaims(jwt.SigningMethodHS256, optionJWT)
 
 	jwt, err := groupOption.SignedString([]byte(os.Getenv("ACCESS_SECRET")))
 	if err != nil {
 		return err.Error(), err
 	}
-	return jwt,nil
+	return jwt, nil
 }
+
+//save concept code
+// func VerifyPINStreamingAccount(c *gin.Context) {
+// 	var params handleParamsRoutePINStruct
+// 	// var matchUser userJsonStructofJWT
+// 	// var stopedLoop bool = false
+// 	var res responseVerifyPINformatJWT
+
+// 	message_error1 := "Verify PIN Failed"
+
+// 	if err := c.ShouldBindJSON(&params); err != nil {
+// 		c.JSON(http.StatusBadRequest, message_error1)
+// 		return
+// 	}
+
+// 	// go func() {
+// 		checkReneval :=  QueryGetRenevalofAccount(params.AccountId)
+// 		// fmt.Println(checkReneval)
+// 	// }()
+
+// 	userOfAccount, err := QueryDataAccount(params.AccountId, params.UserIndex)
+// 	if err != nil {
+// 		c.JSON(http.StatusBadRequest, err)
+// 		return
+// 	}
+// 	// fmt.Println(HashPassword(params.PIN))
+// 	verifyPin := CheckPasswordHash(params.PIN, userOfAccount.PIN)
+// 	if !verifyPin {
+// 		c.JSON(http.StatusBadRequest, " PIN not match")
+// 		return
+// 	}
+// 	// jwtUser := userOfAccount.UserJWT
+// 	// claims := jwt.MapClaims{}
+// 	// jsonJWT, err := jwt.ParseWithClaims(jwtUser, claims, func(token *jwt.Token) (interface{}, error) {
+// 	// 	return []byte(MY_APPLICATION_JWT_KEY), nil
+// 	// })
+// 	// if err != nil {
+// 	// 	c.JSON(http.StatusBadRequest, message_error1)
+// 	// 	return
+// 	// }
+
+// 	// claims, okr := jsonJWT.Claims.(jwt.MapClaims)
+
+// 	// if !okr {
+// 	// 	fmt.Println("error okr")
+// 	// }
+// 	// listUserArray := claims["user_list"].([]interface{})
+
+// 	// for _, item := range listUserArray {
+// 	// 	if !stopedLoop {
+
+// 	// 		var info userJsonStructofJWT
+// 	// 		if rec, ok := item.(map[string]interface{}); ok {
+// 	// 			for key, val := range rec {
+// 	// 				if key == "usr_idx" {
+// 	// 					info.UserIndex = fmt.Sprintf("%v", val)
+// 	// 				} else if key == "username" {
+// 	// 					info.Username = fmt.Sprintf("%v", val)
+// 	// 				} else if key == "pin" {
+// 	// 					info.PIN = fmt.Sprintf("%v", val)
+// 	// 				}else if  key == "image_url"{
+// 	// 					info.ImageURL = fmt.Sprintf("%v", val)
+// 	// 				}
+// 	// 			}
+// 	// 		}
+// 	// 		var a bool = info.UserIndex == params.UserIndex
+// 	// 		var b bool = info.PIN == params.PIN
+// 	// 		if a && b {
+// 	// 			matchUser.PIN = info.PIN
+// 	// 			matchUser.Username = info.Username
+// 	// 			matchUser.UserIndex = info.UserIndex
+// 	// 			matchUser.ImageURL = info.ImageURL
+// 	// 			stopedLoop = true
+
+// 	// 		}
+// 	// 	}
+
+// 	// }
+
+// 	// if len(matchUser.Username) == 0 {
+// 	// 	c.JSON(http.StatusBadRequest, message_error1)
+// 	// 	return
+// 	// }
+//  jwtOfaccessPINverify,err :=	CreateJWTofPIN(responseVerifyPIN{
+// 		AccountId: userOfAccount.AccountId,
+// 		UserIndex: userOfAccount.UserIndex,
+// 		Username: userOfAccount.Username,
+// 		ImageURL: userOfAccount.ImageURL,
+// 		Expire:checkReneval,
+// 	})
+// 	if err != nil {
+// 		c.JSON(http.StatusBadRequest, "Generate JWT Failed")
+// 		return
+// 	}
+// 	res.JwtoffVerifyPIN = jwtOfaccessPINverify
+// 	// res.AccountId = userOfAccount.AccountId
+// 	// res.UserIndex = userOfAccount.UserIndex
+// 	// res.Username = userOfAccount.Username
+// 	// res.ImageURL = userOfAccount.ImageURL
+// 	c.JSON(http.StatusOK, res)
+// }
