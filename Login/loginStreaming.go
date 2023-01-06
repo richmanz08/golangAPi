@@ -415,3 +415,7 @@ func CreateJWTofPIN(data responseVerifyPIN) (string, error) {
 // 	// res.ImageURL = userOfAccount.ImageURL
 // 	c.JSON(http.StatusOK, res)
 // }
+
+
+// for make sessions verifyPin
+// https://gowebexamples.com/sessions
