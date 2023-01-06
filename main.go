@@ -7,10 +7,10 @@ import (
 
 	// M "api-webapp/Member"
 
+	VIDEO "api-webapp/Stream"
 	P "api-webapp/another"
 	C "api-webapp/cloud"
 	COM "api-webapp/components"
-	VIDEO "api-webapp/video"
 	"database/sql"
 	"fmt"
 
@@ -45,9 +45,14 @@ func main() {
 	//Login Authority Project Virify by jwt token
 
 	// router.POST("/login", L.Login)
+	
 	router.POST("/logout", L.Logout)
 	router.POST("/login-streaming",L.LoginStreamingAccount)
 	router.POST("/verify-pin",L.VerifyPINStreamingAccount)
+	// 1.1 session
+	router.GET("/save-session",L.CheckInsession)
+	router.GET("/checkout",L.CheckOutSession)
+	router.GET("/checkuser-islogged",L.CheckAreLoggedIN)
 	// router.POST("/description", COM.Components)
 	// My database api
 
@@ -60,6 +65,7 @@ func main() {
 	//#### Cloud Service ####
 	// router.POST("/cloud-storage-bucket", C.HandleFileUploadToBucket)
 	// router.PUT("/cloud-get-image", C.GetUrlFile)
+
 
 	//##### Product ####
 	// router.GET("/allproduct", COM.ShowAllProduct)
@@ -77,7 +83,7 @@ func main() {
 
 	//###### video-streaming ######
 	// router.GET("/movie",COM.VideoStreamingRender)
-	router.GET("/movie/:mID", VIDEO.ServerFileMedia)
+	router.GET("/movie", VIDEO.ServerFileMedia)
 	router.GET("/media", VIDEO.ServerURLFileMediaM3U8)
 	router.GET("/subtitle", VIDEO.ServerURLFileSubtitle)
 	router.GET("/thumbnail/:file", VIDEO.ServerFileThumbnail)
