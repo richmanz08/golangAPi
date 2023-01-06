@@ -83,7 +83,7 @@ func main() {
 
 	//###### video-streaming ######
 	// router.GET("/movie",COM.VideoStreamingRender)
-	router.GET("/movie", VIDEO.ServerFileMedia)
+	router.GET("/movie/:mID", VIDEO.ServerFileMedia)
 	router.GET("/media", VIDEO.ServerURLFileMediaM3U8)
 	router.GET("/subtitle", VIDEO.ServerURLFileSubtitle)
 	router.GET("/thumbnail/:file", VIDEO.ServerFileThumbnail)

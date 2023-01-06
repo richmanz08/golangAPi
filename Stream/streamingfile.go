@@ -1,24 +1,9 @@
 package video
 
 import (
-	// "bufio"
-	// "bytes"
-
 	"fmt"
 	"net/http"
-
-	// "net/http"
-
-	// "log"
-
 	"strings"
-
-	// "time"
-
-	// "io"
-	// "log"
-	// "net/http"
-	// "os"
 
 	"github.com/gin-gonic/gin"
 )
