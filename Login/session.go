@@ -22,12 +22,14 @@ type UserSession struct {
 	Online     bool `json:"is_online"`
 }
 
+var UserArray []UserSession
+
 func CheckInsession(c *gin.Context){
 	userID := c.Request.URL.Query().Get("uID")
 	log.Println("UserID :::",userID)
 	session, _ := store.Get(c.Request,userID)
 	var User UserSession
-
+	
 	
 	newID ,err:=strconv.ParseInt(userID,0,32) 
 	if err != nil{
@@ -42,9 +44,13 @@ func CheckInsession(c *gin.Context){
 	session.Values["Device"] = "Window x64 Chrome"
 	session.Values["Online"] = true
     session.Save(c.Request, c.Writer)
+
+
+	UserArray = append(UserArray, UserSession{UserID:result,Device:"Window x64 Chrome",Online: true  })
 	c.JSON(http.StatusOK,User)
 }
 func CheckAreLoggedIN(c *gin.Context) {
+	log.Println("LIST ALL:::",UserArray)
 	var User UserSession
 	userID := c.Request.URL.Query().Get("uID")
     session, _ := store.Get(c.Request, userID)
@@ -75,7 +81,7 @@ func CheckAreLoggedIN(c *gin.Context) {
 	 User.UserID =result
 	User.Device = device.(string)
 	User.Online = online.(bool)
-	c.JSON(http.StatusOK,User)
+	c.JSON(http.StatusOK,UserArray)
 }
 func CheckOutSession(c *gin.Context) {
 	userID := c.Request.URL.Query().Get("uID")
