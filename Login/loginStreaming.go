@@ -15,6 +15,7 @@ import (
 
 type responseVerifyPIN struct {
 	AccountId int32  `json:"account_id" `
+	UserID    int32  `json:"idusers"`
 	UserIndex int32  `json:"user_idx"`
 	Username  string `json:"username" `
 	ImageURL  string `json:"image_url"`
@@ -71,11 +72,11 @@ type accountFullStruct struct {
 type checkReneval struct {
 	Reneval string `json:"reneval" `
 }
-type UserSession struct {
-	UserID string  `json:"idusers"`
-	Device string `json:"is_device" `
-	// Online bool   `json:"is_online"`
+type SurviveParams struct {
+	UserID int32  `json:"idusers" binding:"required"`
+	Device string `json:"is_device"  binding:"required"`
 }
+
 func LoginStreamingAccount(c *gin.Context) {
 	var params handleParamsRouteLoginStruct
 	var account responseStructLogin
@@ -157,27 +158,39 @@ func VerifyPINStreamingAccount(c *gin.Context) {
 	var res responseVerifyPINformatJWT
 
 	message_error1 := "Verify PIN Failed"
-
+	// 1. handle body params
 	if err := c.ShouldBindJSON(&params); err != nil {
 		c.JSON(http.StatusBadRequest, message_error1)
 		return
 	}
 
-	 checkReneval := QueryGetRenevalofAccount(params.AccountId)
-	 userOfAccount, err := QueryDataAccount(params.AccountId, params.UserIndex)
+	// 2. check account is Reneval ?
+	checkReneval := QueryGetRenevalofAccount(params.AccountId)
+
+	// 3. query rows in database
+	userOfAccount, err := QueryDataAccount(params.AccountId, params.UserIndex)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, err)
+		c.JSON(http.StatusBadRequest, "user not found")
 		return
 	}
 
+	// 4. check password is matching ?
 	verifyPin := CheckPasswordHash(params.PIN, userOfAccount.PIN)
 	if !verifyPin {
-		c.JSON(http.StatusBadRequest, " PIN not match")
+		c.JSON(http.StatusBadRequest, "pin code not match")
+		return
+	}
+	// 5. check if this user exists in the system.
+	isSurvive := ChekUserIsSurviveInSystem(userOfAccount.UserID)
+	if isSurvive {
+		c.JSON(http.StatusBadRequest, "User has already in system...")
 		return
 	}
 
+	// 6. create jwt
 	jwtOfaccessPINverify, err := CreateJWTofPIN(responseVerifyPIN{
 		AccountId: userOfAccount.AccountId,
+		UserID:    userOfAccount.UserID,
 		UserIndex: userOfAccount.UserIndex,
 		Username:  userOfAccount.Username,
 		ImageURL:  userOfAccount.ImageURL,
@@ -189,49 +202,48 @@ func VerifyPINStreamingAccount(c *gin.Context) {
 	}
 	res.JwtoffVerifyPIN = jwtOfaccessPINverify
 
-
-	// set session login user on Redis server ...
-	var sessionData UserSession
-	sessionData.UserID = strconv.Itoa(int(userOfAccount.UserID))
-	sessionData.Device = "Chrome 20"
-	// at := time.Unix(10222222, 0)
-	// now := time.Now()
-	// sessionCreate := client.Set(sessionData.UserID,sessionData.Device, at.Sub(now)).Err()
-	// if sessionCreate != nil {
-	// 	c.JSON(http.StatusBadGateway, "Error created session")
-	// 	return
-	// }
-
-	_, err = client.Set(sessionData.UserID, sessionData.Device, 5 * time.Second).Result()
-	if err != nil {
-		c.JSON(http.StatusBadGateway, "Error created session")
-		return
-	}
-	// return of route
+	// end...
 	c.JSON(http.StatusOK, res)
 }
 
-func CheckUserIsSurvive(c *gin.Context){
-	userID := c.Request.URL.Query().Get("userID")
-	val, err := client.Get(userID).Result()
-	if err != nil {
-		c.JSON(http.StatusBadRequest,err.Error())
+func SurviveHeal(c *gin.Context) {
+	// set session login user on Redis server ...
+	var params SurviveParams
+	// 1. handle body params
+	if err := c.ShouldBindJSON(&params); err != nil {
+		c.JSON(http.StatusBadRequest, "body request failed")
 		return
 	}
-	// a, err := client.Get(userID)
-	fmt.Println("user stay in device name:::", val)
-	c.JSON(http.StatusOK,val)
-}
-func KillUserSurvive(c *gin.Context){
-	userID := c.Request.URL.Query().Get("userID")
-	deleted, err := client.Del(userID).Result()
-	if err != nil {
-		c.JSON(http.StatusBadRequest,"user not found")
-		return 
+	// 2. set user is survive on redis
+	_, era := client.Set(strconv.Itoa(int(params.UserID)), params.Device, 20*time.Second).Result()
+	if era != nil {
+		c.JSON(http.StatusBadGateway, "Error created session on redis server")
+		return
 	}
-	c.JSON(http.StatusOK,deleted)
+	// end ...
+	c.JSON(http.StatusOK, "create success")
 }
+
+func KillSurvive(c *gin.Context) {
+	// 1. handle header params
+	userID := c.Request.URL.Query().Get("userID")
+
+	// 2. remove user survive in system redis server
+	_, err := client.Del(userID).Result()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, "user not found")
+		return
+	}
+	// end ...
+	c.JSON(http.StatusOK, "remove success")
+}
+
 // ----------------- Function duplicate Helper common
+
+func ChekUserIsSurviveInSystem(userID int32) bool {
+	_, err := client.Get(strconv.Itoa(int(userID))).Result()
+	return err == nil
+}
 
 func HashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
@@ -347,6 +359,7 @@ func CreateJWTofPIN(data responseVerifyPIN) (string, error) {
 	optionJWT := jwt.MapClaims{}
 	optionJWT["account_id"] = data.AccountId
 	optionJWT["user_idx"] = data.UserIndex
+	optionJWT["idusers"] = data.UserID
 	optionJWT["username"] = data.Username
 	optionJWT["image_url"] = data.ImageURL
 	optionJWT["account_is_expire"] = data.Expire
@@ -459,7 +472,6 @@ func CreateJWTofPIN(data responseVerifyPIN) (string, error) {
 // 	// res.ImageURL = userOfAccount.ImageURL
 // 	c.JSON(http.StatusOK, res)
 // }
-
 
 // for make sessions verifyPin
 // https://gowebexamples.com/sessions
