@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -70,7 +71,11 @@ type accountFullStruct struct {
 type checkReneval struct {
 	Reneval string `json:"reneval" `
 }
-
+type UserSession struct {
+	UserID string  `json:"idusers"`
+	Device string `json:"is_device" `
+	// Online bool   `json:"is_online"`
+}
 func LoginStreamingAccount(c *gin.Context) {
 	var params handleParamsRouteLoginStruct
 	var account responseStructLogin
@@ -184,9 +189,48 @@ func VerifyPINStreamingAccount(c *gin.Context) {
 	}
 	res.JwtoffVerifyPIN = jwtOfaccessPINverify
 
+
+	// set session login user on Redis server ...
+	var sessionData UserSession
+	sessionData.UserID = strconv.Itoa(int(userOfAccount.UserID))
+	sessionData.Device = "Chrome 20"
+	// at := time.Unix(10222222, 0)
+	// now := time.Now()
+	// sessionCreate := client.Set(sessionData.UserID,sessionData.Device, at.Sub(now)).Err()
+	// if sessionCreate != nil {
+	// 	c.JSON(http.StatusBadGateway, "Error created session")
+	// 	return
+	// }
+
+	_, err = client.Set(sessionData.UserID, sessionData.Device, 5 * time.Second).Result()
+	if err != nil {
+		c.JSON(http.StatusBadGateway, "Error created session")
+		return
+	}
+	// return of route
 	c.JSON(http.StatusOK, res)
 }
 
+func CheckUserIsSurvive(c *gin.Context){
+	userID := c.Request.URL.Query().Get("userID")
+	val, err := client.Get(userID).Result()
+	if err != nil {
+		c.JSON(http.StatusBadRequest,err.Error())
+		return
+	}
+	// a, err := client.Get(userID)
+	fmt.Println("user stay in device name:::", val)
+	c.JSON(http.StatusOK,val)
+}
+func KillUserSurvive(c *gin.Context){
+	userID := c.Request.URL.Query().Get("userID")
+	deleted, err := client.Del(userID).Result()
+	if err != nil {
+		c.JSON(http.StatusBadRequest,"user not found")
+		return 
+	}
+	c.JSON(http.StatusOK,deleted)
+}
 // ----------------- Function duplicate Helper common
 
 func HashPassword(password string) (string, error) {

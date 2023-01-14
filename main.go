@@ -49,10 +49,13 @@ func main() {
 	router.POST("/logout", L.Logout)
 	router.POST("/login-streaming",L.LoginStreamingAccount)
 	router.POST("/verify-pin",L.VerifyPINStreamingAccount)
+	router.GET("/checklife-user",L.CheckUserIsSurvive)
+	router.GET("/kill-user",L.KillUserSurvive)
 	// 1.1 session
-	router.GET("/save-session",L.CheckInsession)
-	router.GET("/checkout",L.CheckOutSession)
-	router.GET("/checkuser-islogged",L.CheckAreLoggedIN)
+	// router.GET("/save-session",L.CheckInsession)
+	// router.GET("/checkout",L.CheckOutSession)
+	// router.GET("/checkuser-islogged",L.CheckAreLoggedIN)
+	// router.GET("/redis",L.CreateSession)
 	// router.POST("/description", COM.Components)
 	// My database api
 
