@@ -215,7 +215,7 @@ func SurviveHeal(c *gin.Context) {
 		return
 	}
 	// 2. set user is survive on redis
-	_, era := client.Set(strconv.Itoa(int(params.UserID)), params.Device, 20*time.Second).Result()
+	_, era := client.Set(strconv.Itoa(int(params.UserID)), params.Device, 120*time.Minute).Result()
 	if era != nil {
 		c.JSON(http.StatusBadGateway, "Error created session on redis server")
 		return
