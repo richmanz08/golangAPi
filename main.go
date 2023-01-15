@@ -65,7 +65,7 @@ func main() {
 	router.GET("/testusetoken", P.TestUseToken)
 	router.POST("/upimage-local", P.TestUploadImageOnLocalHost)
 	router.StaticFS("/public", http.Dir("public"))
-	router.StaticFS("/assets", http.Dir("assets"))
+	// router.StaticFS("/assets", http.Dir("assets"))
 
 	//#### Cloud Service ####
 	// router.POST("/cloud-storage-bucket", C.HandleFileUploadToBucket)

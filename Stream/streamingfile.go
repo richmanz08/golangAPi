@@ -16,7 +16,9 @@ type MediaURLStruct struct {
 	MovieID string `json:"mID"`
 }
 
-var fileRoot = "assets/"
+var filerootVideo = "D:/streamingfile/house_of_dragon/video/"
+var filerootThumbnail = "D:/streamingfile/house_of_dragon/thumbnail/"
+var filerootSubtitle = "D:/streamingfile/house_of_dragon/subtitle/"
 
 func ServerURLFileMediaM3U8(c *gin.Context) {
 	var mediaOptions MediaURLStruct
@@ -59,7 +61,7 @@ func ServerFileMedia(c *gin.Context) {
 	// }
 
 	// fmt.Println("end log",file_name)
-	c.File(fileRoot + file_name)
+	c.File(filerootVideo + file_name)
 }
 
 func ServerURLFileSubtitle(c *gin.Context) {
@@ -78,7 +80,7 @@ func ServerURLFileSubtitle(c *gin.Context) {
 	fileName := "example_subtitle" // waiting... db for know name file
 	fileType := ".vtt"
 	fileLang := strings.ToUpper(subtitleOptions.Language)
-	result_file_name := fmt.Sprintf("http://localhost:8080/%s%s%s%s", fileRoot, fileName, fileLang, fileType)
+	result_file_name := fmt.Sprintf("http://localhost:8080/%s%s%s%s", filerootSubtitle, fileName, fileLang, fileType)
 	// fmt.Println("fileName :::",result_file_name)
 	// fmt.Println("results path :::",fileRoot+result_file_name)
 
@@ -87,10 +89,10 @@ func ServerURLFileSubtitle(c *gin.Context) {
 }
 
 func ServerFileThumbnail(c *gin.Context) {
-	c.Writer.Header().Set("Content-Type", "image/jpg")
+	c.Writer.Header().Set("Content-Type", "image/jpeg")
 	Filename := c.Param("file")
 	// fileRoot := "assets/"
-	c.File(fileRoot + Filename)
+	c.File(filerootThumbnail + Filename)
 	c.Status(http.StatusOK)
 }
 
