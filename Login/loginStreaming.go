@@ -44,9 +44,10 @@ type handleParamsRouteLoginStruct struct {
 	Password string `json:"password"  binding:"required"`
 }
 type handleParamsRoutePINStruct struct {
-	AccountId int32  `json:"account_id" binding:"required"`
-	UserIndex int32  `json:"user_idx"  binding:"required"`
-	PIN       string `json:"pin"  binding:"required"`
+	AccountId     int32  `json:"account_id" binding:"required"`
+	UserIndex     int32  `json:"user_idx"  binding:"required"`
+	PIN           string `json:"pin"  binding:"required"`
+	ConnectionKey string `json:"force_connection_key"  binding:"required"`
 }
 type responseStructLogin struct {
 	AccountId int32          `json:"account_id" `
@@ -75,6 +76,12 @@ type checkReneval struct {
 type SurviveParams struct {
 	UserID int32  `json:"idusers" binding:"required"`
 	Device string `json:"is_device"  binding:"required"`
+}
+
+type ErrorMessageVerifyPIN struct {
+	ErrerCode int32 `json:"error_code"`
+	Message string `json:"error_message"`
+	StayinDevice string `json:"are_logged_in_device"`
 }
 
 func LoginStreamingAccount(c *gin.Context) {
@@ -117,7 +124,7 @@ func LoginStreamingAccount(c *gin.Context) {
 		return
 	}
 	log.Println(newRowItem)
-	matchingPassword := CheckPasswordHash(params.Password, newRowItem.Password)
+	matchingPassword := ChekHash(params.Password, newRowItem.Password)
 
 	if !matchingPassword {
 		c.JSON(http.StatusBadRequest, "not match password")
@@ -156,11 +163,13 @@ func LoginStreamingAccount(c *gin.Context) {
 func VerifyPINStreamingAccount(c *gin.Context) {
 	var params handleParamsRoutePINStruct
 	var res responseVerifyPINformatJWT
-
-	message_error1 := "Verify PIN Failed"
+	var Errresponse ErrorMessageVerifyPIN
+	
 	// 1. handle body params
 	if err := c.ShouldBindJSON(&params); err != nil {
-		c.JSON(http.StatusBadRequest, message_error1)
+		Errresponse.ErrerCode = 100
+		Errresponse.Message = "params struct error."
+		c.JSON(http.StatusBadRequest,Errresponse)
 		return
 	}
 
@@ -170,25 +179,46 @@ func VerifyPINStreamingAccount(c *gin.Context) {
 	// 3. query rows in database
 	userOfAccount, err := QueryDataAccount(params.AccountId, params.UserIndex)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, "user not found")
+		Errresponse.ErrerCode = 101
+		Errresponse.Message = "user is not found is system."
+		c.JSON(http.StatusBadRequest, Errresponse)
 		return
 	}
 
 	// 4. check password is matching ?
-	verifyPin := CheckPasswordHash(params.PIN, userOfAccount.PIN)
+	verifyPin := ChekHash(params.PIN, userOfAccount.PIN)
 	if !verifyPin {
-		c.JSON(http.StatusBadRequest, "pin code not match")
+		Errresponse.ErrerCode = 102
+		Errresponse.Message = "pin is not match."
+		c.JSON(http.StatusBadRequest, Errresponse)
 		return
 	}
+	convertToint64, _ := strconv.ParseInt(params.ConnectionKey, 10, 0)
 	// 5. check if this user exists in the system.
-	isSurvive := ChekUserIsSurviveInSystem(userOfAccount.UserID)
-	if isSurvive {
-		c.JSON(http.StatusBadRequest, "User has already in system...")
-		return
+	if params.ConnectionKey != "notkey" && int32(convertToint64) == userOfAccount.UserID {
+		// 5.1 check a key connection & verify
+		convertToint64, _ := strconv.ParseInt(params.ConnectionKey, 10, 0)
+		isSurvive := ChekUserIsSurviveInSystem(int32(convertToint64))
+		if !isSurvive {
+			Errresponse.ErrerCode = 103
+			Errresponse.Message = "Connection key error.Please reset cookie in a browser!"
+			c.JSON(http.StatusBadRequest, Errresponse)
+			return
+		}
+	} else {
+		// 5.2 not found a key connection from browser
+		isSurvive := ChekUserIsSurviveInSystem(userOfAccount.UserID)
+		if isSurvive {
+			Errresponse.ErrerCode = 104
+			Errresponse.Message = "This user is currently on another device."
+			Errresponse.StayinDevice = CheckDeviceUserInSystem(userOfAccount.UserID)
+			c.JSON(http.StatusBadRequest, Errresponse)
+			return
+		}
 	}
 
 	// 6. create jwt
-	jwtOfaccessPINverify, err := CreateJWTofPIN(responseVerifyPIN{
+	jwtOfaccessPINverify, _ := CreateJWTofPIN(responseVerifyPIN{
 		AccountId: userOfAccount.AccountId,
 		UserID:    userOfAccount.UserID,
 		UserIndex: userOfAccount.UserIndex,
@@ -196,10 +226,7 @@ func VerifyPINStreamingAccount(c *gin.Context) {
 		ImageURL:  userOfAccount.ImageURL,
 		Expire:    checkReneval,
 	})
-	if err != nil {
-		c.JSON(http.StatusBadRequest, "Generate JWT Failed")
-		return
-	}
+
 	res.JwtoffVerifyPIN = jwtOfaccessPINverify
 
 	// end...
@@ -244,12 +271,19 @@ func ChekUserIsSurviveInSystem(userID int32) bool {
 	_, err := client.Get(strconv.Itoa(int(userID))).Result()
 	return err == nil
 }
+func CheckDeviceUserInSystem(userID int32) string{
+	value, err := client.Get(strconv.Itoa(int(userID))).Result()
+	if err != nil {
+		return ""
+	}
+	return value
+}
 
-func HashPassword(password string) (string, error) {
+func Hash(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
 	return string(bytes), err
 }
-func CheckPasswordHash(password, hash string) bool {
+func ChekHash(password, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	return err == nil
 }
@@ -396,8 +430,8 @@ func CreateJWTofPIN(data responseVerifyPIN) (string, error) {
 // 		c.JSON(http.StatusBadRequest, err)
 // 		return
 // 	}
-// 	// fmt.Println(HashPassword(params.PIN))
-// 	verifyPin := CheckPasswordHash(params.PIN, userOfAccount.PIN)
+// 	// fmt.Println(Hash(params.PIN))
+// 	verifyPin := ChekHash(params.PIN, userOfAccount.PIN)
 // 	if !verifyPin {
 // 		c.JSON(http.StatusBadRequest, " PIN not match")
 // 		return
