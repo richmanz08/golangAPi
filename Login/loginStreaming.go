@@ -76,6 +76,7 @@ type checkReneval struct {
 type SurviveParams struct {
 	UserID int32  `json:"idusers" binding:"required"`
 	Device string `json:"is_device"  binding:"required"`
+	LastLogin string `json:"last_login"  binding:"required"`
 }
 
 type ErrorMessageVerifyPIN struct {
@@ -242,7 +243,9 @@ func SurviveHeal(c *gin.Context) {
 		return
 	}
 	// 2. set user is survive on redis
-	_, era := client.Set(strconv.Itoa(int(params.UserID)), params.Device, 120*time.Minute).Result()
+	newValue := params.Device +"|"+params.LastLogin
+	log.Println(newValue)
+	_, era := client.Set(strconv.Itoa(int(params.UserID)), newValue, 120*time.Minute).Result()
 	if era != nil {
 		c.JSON(http.StatusBadGateway, "Error created session on redis server")
 		return
