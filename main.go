@@ -25,7 +25,7 @@ func main() {
 	// CONNECT DATABASE
 
 	// db, err := sql.Open("mysql", "root:Xx0984437173@@tcp(127.0.0.1:3306)/app_database") //for client macOS
-	db, err := sql.Open("mysql", "root:1234@tcp(127.0.0.1:3306)/app_database") //for client PC Window
+	db, err := sql.Open("mysql", "root:1234@tcp(127.0.0.1:3306)/app_database?parseTime=true") //for client PC Window
 	if err != nil {
 		fmt.Println("Connect Database Failed")
 		panic(err.Error())
