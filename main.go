@@ -6,11 +6,11 @@ import (
 	"net/http"
 
 	// M "api-webapp/Member"
-
 	VIDEO "api-webapp/Stream"
 	P "api-webapp/another"
 	C "api-webapp/cloud"
 	COM "api-webapp/components"
+	MOVIE "api-webapp/movies"
 	"database/sql"
 	"fmt"
 
@@ -39,6 +39,7 @@ func main() {
 	COM.DBmember = db
 	C.DB = db
 	L.DB = db
+	MOVIE.DB = db
 
 	// Pass Variable to member.go
 
@@ -93,6 +94,10 @@ func main() {
 	router.GET("/subtitle", VIDEO.ServerURLFileSubtitle)
 	router.GET("/thumbnail/:file", VIDEO.ServerFileThumbnail)
 	// router.GET("/media/{mId:[0-9]+}/stream/", VIDEO.StreamHandle)
+
+
+	//####### movies ##########
+	router.POST("/movies-create",MOVIE.CreateMovie)
 
 	log.Fatal(router.Run(":8080"))
 }
