@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -18,9 +19,11 @@ func CreateMovie(c *gin.Context) {
 	file, header, err := c.Request.FormFile("file")
 
 	if err != nil {
-		c.String(http.StatusBadRequest, fmt.Sprintf("file err : %s", err.Error()))
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to read the file"})
 		return
 	}
+	defer file.Close()
+
 	form, err := c.MultipartForm()
 
 	if err != nil {
@@ -33,6 +36,7 @@ func CreateMovie(c *gin.Context) {
 		log.Fatal(err)
 	}
 	defer out.Close()
+	
 	_, err = io.Copy(out, file)
 	if err != nil {
 		log.Fatal(err)
@@ -53,19 +57,7 @@ func CreateMovie(c *gin.Context) {
 	movie.Description = form.Value["description"][0]
 	movie.Directors_id = form.Value["directors_id"][0]
 	movie.Casters_id = form.Value["casters_id"][0]
-	// if len(form.Value["episodes"]) != 0 {
-	// 	movie.Episodes = convertInt32(form.Value["episodes"][0])
-	// }
 
-	// if len(form.Value["description"]) != 0 {
-	// 	movie.Description = form.Value["description"][0]
-	// }
-	// if len(form.Value["directors_id"]) != 0 {
-	// 	movie.Directors_id = form.Value["directors_id"][0]
-	// }
-	// if len(form.Value["casters_id"]) != 0 {
-	// 	movie.Casters_id = form.Value["casters_id"][0]
-	// }
 
 	querySQL := `INSERT INTO movies(
 		movie_name_local,
@@ -144,9 +136,6 @@ func CreateMovie(c *gin.Context) {
 			&new.PosterURL,
 			&new.DirectoryName,
 			&new.Year,
-			
-			
-	
 		)
 		if err != nil {
 			panic(err.Error())
@@ -155,6 +144,12 @@ func CreateMovie(c *gin.Context) {
 		movie.CreateAt = new.CreateAt
 		movie.UpdateAt = new.UpdateAt
 
+	}
+
+	createFolderResponse := createFolder(movie)
+	if !createFolderResponse {
+		c.JSON(http.StatusBadRequest, "duplicate ?")
+		return
 	}
 
 	c.JSON(http.StatusCreated, movie)
@@ -169,9 +164,52 @@ func convertInt32(str string) int32 {
 	return int32(num)
 }
 func convertFloat64(str string) float64 {
-	num, err := strconv.ParseFloat(str, 32)
+	floatValue, err := strconv.ParseFloat(str, 64)
 	if err != nil {
-		return 0
+		return 0.0
 	}
-	return float64(num)
+	return floatValue
+}
+func createFolder(movie IMovie) bool{
+	var bucketFolder = "D:\\streamingfile\\"
+
+	// Replace "YourDesiredFolderName" with the name of the folder you want to create
+	folderName := movie.DirectoryName
+	// Replace "D:\\" with the desired path on the D drive where you want to create the folder
+	folderPath := bucketFolder + folderName
+
+	// Create the command to execute
+	cmd := exec.Command("cmd", "/c", "mkdir", folderPath)
+
+	errCommand := cmd.Run()
+	if errCommand != nil {
+		fmt.Println("Error creating folder:", errCommand)
+		 return false
+		// os.Exit(1)
+	}
+
+	// thumbnail sub folder
+	thumbnailPathFolder := bucketFolder + folderName + "\\thumbnail"
+	// Create the command to execute
+	cmdthumbnail := exec.Command("cmd", "/c", "mkdir", thumbnailPathFolder)
+	cmdthumbnail.Run()
+
+	// subtitle sub folder
+	subtitlePathFolder := bucketFolder + folderName + "\\subtitle"
+	// Create the command to execute
+	cmdsubtitle := exec.Command("cmd", "/c", "mkdir", subtitlePathFolder)
+	cmdsubtitle.Run()
+
+	// audio sub folder
+	audioPathFolder := bucketFolder + folderName + "\\audio"
+	// Create the command to execute
+	cmdaudio := exec.Command("cmd", "/c", "mkdir", audioPathFolder)
+	cmdaudio.Run()
+
+	// video sub folder
+	videoPathFolder := bucketFolder + folderName + "\\video"
+	// Create the command to execute
+	cmdvideo := exec.Command("cmd", "/c", "mkdir", videoPathFolder)
+	cmdvideo.Run()
+	return true
 }
