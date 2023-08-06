@@ -13,8 +13,8 @@
 cd เข้าไป redis/redis-stable แล้ว redis-server
 
 
-
-
+// Run api server by Nodemon
+nodemon --exec go run main.go
 
 
 

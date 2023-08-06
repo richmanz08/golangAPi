@@ -1,6 +1,10 @@
 package movies
 
-import "time"
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
 
 type IMovie struct {
 	ID             int32   `json:"id"`
@@ -20,4 +24,26 @@ type IMovie struct {
 	CreateAt       *time.Time  `json:"create_at" `
 	UpdateAt       *time.Time  `json:"update_at" `
 	DeleteAt       *time.Time     `json:"delete_at" `
+}
+
+
+ type Movie_information struct {
+	ID             int32      `gorm:"primaryKey;autoIncrement" `
+    MovieNameLocal string     `gorm:"column:movie_name_local;unique"`
+    MovieNameEng   string     `gorm:"column:movie_name_eng;unique" `
+    Episodes       int32      `gorm:"" `
+    Type           string     `gorm:"not null" `
+    Rating         float64    `gorm:"" `
+    Duration       float64    `gorm:"" `
+    Description    string     `gorm:"" `
+    QualityType    string     `gorm:""`
+    DirectorsID    string     `gorm:"" `
+    CastersID      string     `gorm:"" `
+    PosterURL      string     `gorm:"column:poster_url" `
+    DirectoryName  string     `gorm:"column:directory_name;unique" `
+    Year           int32      `gorm:"not null" `
+    CreateAt       *time.Time `gorm:"autoCreateTime" `
+    UpdateAt       *time.Time `gorm:"autoUpdateTime" `
+    DeleteAt       gorm.DeletedAt `gorm:"" `
+
 }

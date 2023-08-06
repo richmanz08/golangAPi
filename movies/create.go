@@ -1,19 +1,21 @@
 package movies
 
 import (
-	"database/sql"
 	"fmt"
 	"io"
 	"log"
+	"mime/multipart"
 	"net/http"
 	"os"
 	"os/exec"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
-var DB *sql.DB
+// var DB *sql.DB
+var DB *gorm.DB
 
 func CreateMovie(c *gin.Context) {
 	file, header, err := c.Request.FormFile("file")
@@ -30,131 +32,51 @@ func CreateMovie(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, "create movie failed")
 	}
 
-	filename := header.Filename
-	out, err := os.Create("public/" + filename)
-	if err != nil {
-		log.Fatal(err)
+
+	filepath, errUpload := uploadImage(file,header)
+	if errUpload != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to upload poster"})
+		return
 	}
-	defer out.Close()
 	
-	_, err = io.Copy(out, file)
-	if err != nil {
-		log.Fatal(err)
+	newMovieInformation := Movie_information{
+		MovieNameLocal:  form.Value["movie_name_local"][0],
+		MovieNameEng:form.Value["movie_name_eng"][0],
+		Type: form.Value["type"][0],
+		Rating:convertFloat64(form.Value["rating"][0]),
+		Duration: convertFloat64(form.Value["duration"][0]),
+		QualityType: form.Value["quality_type"][0],
+		PosterURL:filepath,
+		DirectoryName:form.Value["directory_name"][0],
+		Year:  convertInt32(form.Value["year"][0]),
+		Episodes: convertInt32(form.Value["episodes"][0]),
+		Description: form.Value["description"][0],
+		DirectorsID: form.Value["directors_id"][0],
+		CastersID: form.Value["casters_id"][0],
 	}
-	filepath := "http://localhost:8080/public/" + filename
 
-	var movie IMovie
-	movie.MovieNameLocal = form.Value["movie_name_local"][0]
-	movie.MovieNameEng = form.Value["movie_name_eng"][0]
-	movie.Type = form.Value["type"][0]
-	movie.Rating = convertFloat64(form.Value["rating"][0])
-	movie.Duration = convertFloat64(form.Value["duration"][0])
-	movie.QualityType = form.Value["quality_type"][0]
-	movie.PosterURL = filepath
-	movie.DirectoryName = form.Value["directory_name"][0]
-	movie.Year = convertInt32(form.Value["year"][0])
-	movie.Episodes = convertInt32(form.Value["episodes"][0])
-	movie.Description = form.Value["description"][0]
-	movie.Directors_id = form.Value["directors_id"][0]
-	movie.Casters_id = form.Value["casters_id"][0]
+	// 1. เช็คก่อนว่ามีซ้ำกันหรือไม่
+	createFolderResponse := createFolder(newMovieInformation)
+	if !createFolderResponse {
+		c.JSON(http.StatusBadRequest, "duplicate folder directory ?")
+		return
+	}
 
-
-	querySQL := `INSERT INTO movies(
-		movie_name_local,
-		movie_name_eng,
-		type,
-		rating,
-		duration,
-		quality_type,
-		poster_url,
-		directory_name,
-		year,
-		episodes,
-		description,
-		directors_id,
-		casters_id) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)
-	`
-	data, err := DB.Prepare(querySQL)
-
-	if err != nil {
-		log.Println(err)
+	// 2. ทำการ insert ลง Database
+	result := DB.Create(&newMovieInformation)
+	if result.Error != nil {
 		c.JSON(http.StatusBadRequest, "failed to insert table")
 		return
 	}
-	defer data.Close()
 
-	result, err := data.Exec(
-		movie.MovieNameLocal,
-		movie.MovieNameEng,
-		movie.Type,
-		movie.Rating,
-		movie.Duration,
-		movie.QualityType,
-		movie.PosterURL,
-		movie.DirectoryName,
-		movie.Year,
-		movie.Episodes,
-		movie.Description,
-		movie.Directors_id,
-		movie.Casters_id)
+	
 
-	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusInternalServerError, "failed to create movie")
-		return
-	}
 
-	// Retrieve the last inserted record ID
-	lastInsertID, err := result.LastInsertId()
-	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusInternalServerError, "failed to retrieve last insert ID")
-		return
-	}
-	response, err := DB.Query("SELECT * FROM movies WHERE id=?", lastInsertID)
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer response.Close()
-	for response.Next() {
-		var new IMovie
-		err = response.Scan(
-			&new.ID,
-			&new.MovieNameLocal,
-			&new.MovieNameEng,
-			&new.Episodes,
-			&new.CreateAt,
-			&new.UpdateAt,
-			&new.DeleteAt,
-			&new.Type,
-			&new.Rating,
-			&new.Duration,
-			&new.Description,
-			&new.QualityType,
-			&new.Directors_id,
-			&new.Casters_id,
-			&new.PosterURL,
-			&new.DirectoryName,
-			&new.Year,
-		)
-		if err != nil {
-			panic(err.Error())
-		}
-		movie.ID = new.ID
-		movie.CreateAt = new.CreateAt
-		movie.UpdateAt = new.UpdateAt
-
-	}
-
-	createFolderResponse := createFolder(movie)
-	if !createFolderResponse {
-		c.JSON(http.StatusBadRequest, "duplicate ?")
-		return
-	}
-
-	c.JSON(http.StatusCreated, movie)
+	c.JSON(http.StatusCreated, newMovieInformation)
 
 }
+
+// FUNCTION :) SUPPORT CREAT MOVIE API
 
 func convertInt32(str string) int32 {
 	num, err := strconv.ParseInt(str, 10, 32)
@@ -170,7 +92,7 @@ func convertFloat64(str string) float64 {
 	}
 	return floatValue
 }
-func createFolder(movie IMovie) bool{
+func createFolder(movie Movie_information) bool{
 	var bucketFolder = "D:\\streamingfile\\"
 
 	// Replace "YourDesiredFolderName" with the name of the folder you want to create
@@ -212,4 +134,19 @@ func createFolder(movie IMovie) bool{
 	cmdvideo := exec.Command("cmd", "/c", "mkdir", videoPathFolder)
 	cmdvideo.Run()
 	return true
+}
+func uploadImage(file multipart.File,header *multipart.FileHeader) (string, error){
+	filename := header.Filename
+	out, err := os.Create("public/" + filename)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer out.Close()
+	
+	_, err = io.Copy(out, file)
+	if err != nil {
+		log.Fatal(err)
+	}
+	filepath := "http://localhost:8080/public/" + filename
+	return filepath, nil
 }

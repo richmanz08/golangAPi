@@ -2,22 +2,33 @@ package main
 
 import (
 	L "api-webapp/Login"
+	"database/sql"
 	"log"
 	"net/http"
+	"time"
 
 	// M "api-webapp/Member"
 	VIDEO "api-webapp/Stream"
 	P "api-webapp/another"
-	C "api-webapp/cloud"
 	COM "api-webapp/components"
 	MOVIE "api-webapp/movies"
-	"database/sql"
 	"fmt"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 )
-
+type milotabletest struct {
+	ID        uint   `gorm:"primarykey"`
+	Name      string `gorm:"not null"`
+	Email     string `gorm:"unique"`
+	Same_email     string `gorm:"unique"`
+	Age       int
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	
+}
 func main() {
 	router := gin.Default()
 	router.Use(CORSMiddleware())
@@ -25,7 +36,14 @@ func main() {
 	// CONNECT DATABASE
 
 	// db, err := sql.Open("mysql", "root:Xx0984437173@@tcp(127.0.0.1:3306)/app_database") //for client macOS
-	db, err := sql.Open("mysql", "root:1234@tcp(127.0.0.1:3306)/app_database?parseTime=true") //for client PC Window
+	dbOld,errConnection := sql.Open("mysql", "root:1234@tcp(127.0.0.1:3306)/app_database?parseTime=true") //for client PC Window
+	if errConnection != nil {
+		fmt.Println("Connect Database Failed")
+		panic(errConnection.Error())
+
+	}
+	// by gorm
+	db, err := gorm.Open(mysql.Open("root:1234@tcp(127.0.0.1:3306)/app_database?charset=utf8mb4&parseTime=True&loc=Local"), &gorm.Config{})
 	if err != nil {
 		fmt.Println("Connect Database Failed")
 		panic(err.Error())
@@ -33,12 +51,16 @@ func main() {
 	} else {
 		fmt.Println("Connect Database Success")
 	}
-	defer db.Close()
+	// defer db.Close()
+
+	db.AutoMigrate(&milotabletest{})
+	db.AutoMigrate(&MOVIE.Movie_information{})
+
 	// M.DB = db
-	COM.DB = db
-	COM.DBmember = db
-	C.DB = db
-	L.DB = db
+	// COM.DB = db
+	// COM.DBmember = db
+	// C.DB = db
+	L.DB = dbOld
 	MOVIE.DB = db
 
 	// Pass Variable to member.go
