@@ -19,16 +19,7 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
-type milotabletest struct {
-	ID        uint   `gorm:"primarykey"`
-	Name      string `gorm:"not null"`
-	Email     string `gorm:"unique"`
-	Same_email     string `gorm:"unique"`
-	Age       int
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	
-}
+
 func main() {
 	router := gin.Default()
 	router.Use(CORSMiddleware())
@@ -43,7 +34,9 @@ func main() {
 
 	}
 	// by gorm
-	db, err := gorm.Open(mysql.Open("root:1234@tcp(127.0.0.1:3306)/app_database?charset=utf8mb4&parseTime=True&loc=Local"), &gorm.Config{})
+	gormDB, err := gorm.Open(mysql.Open("root:1234@tcp(127.0.0.1:3306)/app_database?charset=utf8mb4&parseTime=True&loc=Local"), &gorm.Config{NowFunc: func() time.Time {
+		return time.Now().Local()
+	  },})
 	if err != nil {
 		fmt.Println("Connect Database Failed")
 		panic(err.Error())
@@ -53,15 +46,12 @@ func main() {
 	}
 	// defer db.Close()
 
-	db.AutoMigrate(&milotabletest{})
-	db.AutoMigrate(&MOVIE.Movie_information{})
+	gormDB.AutoMigrate(&MOVIE.Movie{})
+	gormDB.AutoMigrate(&MOVIE.MovieGroup{})
 
-	// M.DB = db
-	// COM.DB = db
-	// COM.DBmember = db
-	// C.DB = db
+
 	L.DB = dbOld
-	MOVIE.DB = db
+	MOVIE.DB = gormDB
 
 	// Pass Variable to member.go
 
@@ -95,12 +85,6 @@ func main() {
 	// router.PUT("/cloud-get-image", C.GetUrlFile)
 
 
-	//##### Product ####
-	// router.GET("/allproduct", COM.ShowAllProduct)
-	// router.POST("/addproduct", COM.AddProDuct)
-	// router.PUT("/updateproduct", COM.UpdateProduct)
-	// router.DELETE("/deletedproduct/:id", COM.DeleteProduct)
-
 	//#### Member #####
 	router.POST("/addmember", COM.CreateUser)
 	router.GET("/allusers", COM.ShowallUser)
@@ -119,7 +103,10 @@ func main() {
 
 
 	//####### movies ##########
-	router.POST("/movies-create",MOVIE.CreateMovie)
+	router.POST("/movies-add",MOVIE.AddMovie)
+	router.POST("/movies-information",MOVIE.CreateInformationMovie)
+
+
 
 	log.Fatal(router.Run(":8080"))
 }
