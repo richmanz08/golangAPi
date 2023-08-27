@@ -7,6 +7,9 @@ import (
 )
 
 var DB *gorm.DB
+
+
+// ----------------- Table 
 type Movie struct {
 	ID            uint          `gorm:"primaryKey;autoIncrement" `
 	MovieGroupID  uint          `gorm:"not null" `
@@ -38,4 +41,24 @@ type MovieGroup struct {
 	CreatedAt  *time.Time     `gorm:"autoCreateTime"`
 	UpdatedAt  *time.Time     `gorm:"autoUpdateTime"`
 	DeletedAt  gorm.DeletedAt `gorm:"index" `
+}
+
+
+// ----------------- type
+
+type ParamsMovieGroup struct {
+	Name  string `json:"Name"`
+	Status     string
+	PageSize int `json:"pageSize" binding:"required"`
+	Current  int `json:"current" binding:"required"`
+}
+type ResponseMovieGroup struct {
+	ID         uint
+	NameLocal  string
+	NameEng    string
+	Type       string
+	Status     string
+	PosterPath string
+	CreatedAt  *time.Time
+	UpdatedAt  *time.Time
 }

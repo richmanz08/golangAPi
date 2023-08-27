@@ -105,6 +105,7 @@ func main() {
 	//####### movies ##########
 	router.POST("/movies-add",MOVIE.AddMovie)
 	router.POST("/movies-information",MOVIE.CreateInformationMovie)
+	router.GET("/movies-information",MOVIE.GetAllInformationMovie)
 
 
 
