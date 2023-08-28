@@ -2,6 +2,7 @@ package movies
 
 import (
 	"net/http"
+	"strconv"
 
 	common "api-webapp/common"
 
@@ -37,7 +38,6 @@ func CreateInformationMovie(c *gin.Context) {
 		PosterPath: filepath,
 	}
 
-	
 	result := DB.Create(&newMovie)
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": result.Error.Error()})
@@ -46,44 +46,71 @@ func CreateInformationMovie(c *gin.Context) {
 	c.JSON(http.StatusCreated, newMovie)
 }
 
-
-func GetAllInformationMovie(c *gin.Context){
+func GetAllInformationMovie(c *gin.Context) {
 
 	var params ParamsMovieGroup
+	var movies []MovieGroup
 
-	if err := c.ShouldBindJSON(&params); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	params.Name = c.Param("Name")
+	params.Status = c.Param("Status")
+	pageSizeStr := c.DefaultQuery("pageSize", "10")
+	currentStr := c.DefaultQuery("current", "1")
+
+	pageSize, err := strconv.Atoi(pageSizeStr)
+	if err != nil {
+		c.String(http.StatusBadRequest, "Invalid pagesize value")
 		return
 	}
 
+	current, err := strconv.Atoi(currentStr)
+	if err != nil {
+		c.String(http.StatusBadRequest, "Invalid current value")
+		return
+	}
 
-	var movies  []MovieGroup
+	params.PageSize = pageSize
+	params.Current = current
+	c.ShouldBindJSON(&params)
 
 	dynamicQuery := DB.Model(&MovieGroup{})
 
 	if params.Name != "" {
- 		dynamicQuery = dynamicQuery.Where("name_eng LIKE ? OR name_local LIKE ?","%"+params.Name+"%","%"+params.Name+"%")
+		dynamicQuery = dynamicQuery.Where("name_eng LIKE ? OR name_local LIKE ?", "%"+params.Name+"%", "%"+params.Name+"%")
 	}
 
-
-   if params.Status != ""  {
-		dynamicQuery = dynamicQuery.Where("status IN (?)",params.Status)
+	if params.Status != "" {
+		dynamicQuery = dynamicQuery.Where("status IN (?)", params.Status)
 	}
 
 	paginatedDB, err := common.Paginate(dynamicQuery, params.Current, params.PageSize)
-    if err != nil {
-        c.JSON(http.StatusBadRequest, gin.H{"error":err.Error()})
-		return 
-    }
-
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 
 	queryFindall := paginatedDB.Find(&movies)
-
-
 	if queryFindall.Error != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": queryFindall.Error})
 		return
 	}
+
+	if len(movies) == 0 && params.Current > 1 {
+
+		params.Current = 1
+		dynamicQuery = DB.Model(&MovieGroup{})
+		againPaginatedDB, err := common.Paginate(dynamicQuery, params.Current, params.PageSize)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		againQueryFindall := againPaginatedDB.Find(&movies)
+		if againQueryFindall.Error != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": againQueryFindall.Error})
+			return
+		}
+
+	}
+
 	var simplifiedMovies []ResponseMovieGroup
 	for _, movie := range movies {
 		simplifiedMovie := ResponseMovieGroup{
@@ -109,13 +136,12 @@ func GetAllInformationMovie(c *gin.Context){
 		Data: simplifiedMovies,
 		Pagination: common.Pagination{
 			PageSize: params.PageSize,
-			Current:  1,
-			Total: int(totalCount) ,
+			Current:  params.Current,
+			Total:    int(totalCount),
 		},
 		StatusCode: 200,
 	}
 
 	c.JSON(http.StatusOK, response)
-
 
 }
