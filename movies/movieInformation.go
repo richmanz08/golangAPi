@@ -35,6 +35,7 @@ func CreateInformationMovie(c *gin.Context) {
 		NameEng:    form.Value["NameEng"][0],
 		Type:       form.Value["Type"][0],
 		Status:     form.Value["Status"][0],
+		Description: form.Value["Description"][0],
 		PosterPath: filepath,
 	}
 
@@ -120,6 +121,7 @@ func GetAllInformationMovie(c *gin.Context) {
 			Type:       movie.Type,
 			Status:     movie.Status,
 			PosterPath: movie.PosterPath,
+			Description: movie.Description,
 			CreatedAt:  movie.CreatedAt,
 			UpdatedAt:  movie.UpdatedAt,
 		}

@@ -16,9 +16,10 @@ type MediaURLStruct struct {
 	MovieID string `json:"mID"`
 }
 
-var filerootVideo = "D:/streamingfile/house_of_dragon/video/"
+var filerootVideo = "D:/streamingfile/"
 var filerootThumbnail = "D:/streamingfile/house_of_dragon/thumbnail/"
 var filerootSubtitle = "D:/streamingfile/house_of_dragon/subtitle/"
+var CONFIG_CONTENT_TYPE = "Content-Type"
 
 func ServerURLFileMediaM3U8(c *gin.Context) {
 	var mediaOptions MediaURLStruct
@@ -29,49 +30,54 @@ func ServerURLFileMediaM3U8(c *gin.Context) {
 	fileName := "hotd_bandwidth" // waiting... db for know name file
 	fileType := ".m3u8"
 
-	result_file_name := fmt.Sprintf("http://localhost:8080/%s%s%s", URLRoot, fileName, fileType)
-	c.JSON(http.StatusOK, result_file_name)
+	resultFileName := fmt.Sprintf("http://localhost:8080/%s%s%s", URLRoot, fileName, fileType)
+	c.JSON(http.StatusOK, resultFileName)
 }
 func ServerFileMedia(c *gin.Context) {
 
-	file_name := c.Param("mID")
-	fmt.Println("Filename was connected : ", file_name)
-	// fileRoot := "assets/"
-	typeFile := strings.Split(file_name, ".")
+	url := c.Param("name")
+
+	if len(url) == 0 {
+		c.JSON(http.StatusBadRequest,"ERROR LOAD FILE OR DESTINATION PATH")
+		return
+	}
+
+	typeFile := strings.Split(url, ".")
 	typeFileName := typeFile[1]
-	// fmt.Println("result file type TS :::",typeFileName == "ts")
+
+	var directoryName string
+
+	if len(typeFile[0]) != 0 {
+		dir := strings.Split(typeFile[0], "q")
+		directoryName = dir[0]
+	}
+
+	
+	
+
+
+
 
 	if typeFileName == "ts" {
-		c.Writer.Header().Set("Content-Type", "application/octet-stream")
+		c.Writer.Header().Set(CONFIG_CONTENT_TYPE, "application/octet-stream")
 	} else {
-		c.Writer.Header().Set("Content-Type", "application/x-mpegURL")
+		c.Writer.Header().Set(CONFIG_CONTENT_TYPE, "application/x-mpegURL")
 	}
-	// rex := regexp.MustCompile("[0-9]+")
-	// numberOfFileTS := rex.FindAllString(file_name, -1)
-	// indexFileTS, err := strconv.Atoi(numberOfFileTS[0])
-	// if err != nil {
-	// 	fmt.Println("file index error")
-	// }
-	// if typeFileName == "ts" && indexFileTS > 5 {
 
-	// 	newFilename := strings.Replace(file_name, "fhd", "low", 1)
-	// 	c.File(fileRoot + newFilename)
-	// 	fmt.Println("changed qulaity", newFilename)
-	// 	return
-	// }
+	result := filerootVideo + directoryName + "/video/"+ url
 
-	// fmt.Println("end log",file_name)
-	c.File(filerootVideo + file_name)
+	c.File(result)
+
 }
 
 func ServerURLFileSubtitle(c *gin.Context) {
 	var subtitleOptions SubtitleURLStruct
 
 	movieID := c.Request.URL.Query().Get("mID")
-	subtitle_lang := c.Request.URL.Query().Get("lang")
+	subtitleLang := c.Request.URL.Query().Get("lang")
 
 	subtitleOptions.MovieID = movieID
-	subtitleOptions.Language = subtitle_lang
+	subtitleOptions.Language = subtitleLang
 
 	// fmt.Println("movieID :::",movieID)
 	// fmt.Println("subtitle_lang :::",subtitle_lang)
@@ -80,16 +86,16 @@ func ServerURLFileSubtitle(c *gin.Context) {
 	fileName := "example_subtitle" // waiting... db for know name file
 	fileType := ".vtt"
 	fileLang := strings.ToUpper(subtitleOptions.Language)
-	result_file_name := fmt.Sprintf("http://localhost:8080/%s%s%s%s", filerootSubtitle, fileName, fileLang, fileType)
+	resultFileName := fmt.Sprintf("http://localhost:8080/%s%s%s%s", filerootSubtitle, fileName, fileLang, fileType)
 	// fmt.Println("fileName :::",result_file_name)
 	// fmt.Println("results path :::",fileRoot+result_file_name)
 
 	// c.Writer.Header().Set("Content-Type","WEBVTT")
-	c.JSON(http.StatusOK, result_file_name)
+	c.JSON(http.StatusOK, resultFileName)
 }
 
 func ServerFileThumbnail(c *gin.Context) {
-	c.Writer.Header().Set("Content-Type", "image/jpeg")
+	c.Writer.Header().Set(CONFIG_CONTENT_TYPE, "image/jpeg")
 	Filename := c.Param("file")
 	// fileRoot := "assets/"
 	c.File(filerootThumbnail + Filename)

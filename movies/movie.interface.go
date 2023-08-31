@@ -37,6 +37,7 @@ type MovieGroup struct {
 	NameEng    string         `gorm:"not null;unique" `
 	Type       string         `gorm:"not null" ` // MOVIE OR SERIES
 	Status     string         `gorm:"not null" ` // ACTIVE OR INACTIVE
+	Description   string         `gorm:"" `
 	PosterPath string         `gorm:"not null" `
 	CreatedAt  *time.Time     `gorm:"autoCreateTime"`
 	UpdatedAt  *time.Time     `gorm:"autoUpdateTime"`
@@ -45,6 +46,12 @@ type MovieGroup struct {
 
 
 // ----------------- type
+
+type ParamsMovies struct {
+	MovieGroupID  int  
+	PageSize int `json:"pageSize" binding:"required"`
+	Current  int `json:"current" binding:"required"`
+}
 
 type ParamsMovieGroup struct {
 	Name  string `json:"Name"`
@@ -59,6 +66,7 @@ type ResponseMovieGroup struct {
 	Type       string
 	Status     string
 	PosterPath string
+	Description string
 	CreatedAt  *time.Time
 	UpdatedAt  *time.Time
 }
