@@ -16,6 +16,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/joho/godotenv"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -33,6 +34,14 @@ func main() {
 		panic(errConnection.Error())
 
 	}
+
+
+	// env :) load env file
+	err := godotenv.Load()
+	if err != nil {
+		panic(err.Error())
+	}
+
 	// by gorm
 	gormDB, err := gorm.Open(mysql.Open("root:1234@tcp(127.0.0.1:3306)/app_database?charset=utf8mb4&parseTime=True&loc=Local"), &gorm.Config{NowFunc: func() time.Time {
 		return time.Now().Local()
@@ -98,7 +107,7 @@ func main() {
 	router.GET("/movie/:name", VIDEO.ServerFileMedia)
 	router.GET("/media", VIDEO.ServerURLFileMediaM3U8)
 	router.GET("/subtitle", VIDEO.ServerURLFileSubtitle)
-	router.GET("/thumbnail/:file", VIDEO.ServerFileThumbnail)
+	router.GET("/thumbnail/:root/:file", VIDEO.ServerFileThumbnail)
 	// router.GET("/media/{mId:[0-9]+}/stream/", VIDEO.StreamHandle)
 
 

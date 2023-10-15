@@ -53,7 +53,7 @@ ffmpeg -y -i hotd.mp4 -vf scale=w=640:h=360:force_original_aspect_ratio=decrease
 //example ::: แปลงในทุกๆ 20 วินาที
 ffmpeg -i test.mp4 -vf fps=1/20 thumb%04d.png
 //example ::: แปลงในทุกๆ 5 วินาที
-ffmpeg -i hotd.mp4 -vf fps=1/5 hotd_thumb%d.jpeg;  
+ffmpeg -i [REPLACE_VIDEO_MP4_NAME] -vf fps=1/5 [REPLACE_DIRECTORY_NAME]%d.jpeg 
 
 
 

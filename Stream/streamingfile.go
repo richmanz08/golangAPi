@@ -2,7 +2,9 @@ package video
 
 import (
 	"fmt"
+	"log"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -16,8 +18,7 @@ type MediaURLStruct struct {
 	MovieID string `json:"mID"`
 }
 
-var filerootVideo = "D:/streamingfile/"
-var filerootThumbnail = "D:/streamingfile/house_of_dragon/thumbnail/"
+
 var filerootSubtitle = "D:/streamingfile/house_of_dragon/subtitle/"
 var CONFIG_CONTENT_TYPE = "Content-Type"
 
@@ -55,7 +56,7 @@ func ServerFileMedia(c *gin.Context) {
 	
 	
 
-
+	
 
 
 	if typeFileName == "ts" {
@@ -64,8 +65,9 @@ func ServerFileMedia(c *gin.Context) {
 		c.Writer.Header().Set(CONFIG_CONTENT_TYPE, "application/x-mpegURL")
 	}
 
-	result := filerootVideo + directoryName + "/video/"+ url
-
+	bucket := os.Getenv("BUCKET_FILE_URL")
+	result := bucket + directoryName + "/video/"+ url
+log.Println(result)
 	c.File(result)
 
 }
@@ -96,9 +98,13 @@ func ServerURLFileSubtitle(c *gin.Context) {
 
 func ServerFileThumbnail(c *gin.Context) {
 	c.Writer.Header().Set(CONFIG_CONTENT_TYPE, "image/jpeg")
+	directory := c.Param("root")
 	Filename := c.Param("file")
-	// fileRoot := "assets/"
-	c.File(filerootThumbnail + Filename)
+
+	bucket := os.Getenv("BUCKET_FILE_URL")
+	result := bucket + directory + "/thumbnail/"+ Filename
+	fmt.Println(result)
+	c.File(result)
 	c.Status(http.StatusOK)
 }
 
