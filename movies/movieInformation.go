@@ -147,3 +147,31 @@ func GetAllInformationMovie(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 
 }
+
+func GetOneInformationMovie( c * gin.Context){
+	movieID := c.Param("id")
+	
+	var movie Movie
+	query := DB.First(&movie, movieID)
+	if query.Error != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Movie not found"})
+		return
+	}
+
+	response := Movie{
+		ID:          movie.ID,
+		MovieGroupID: movie.MovieGroupID,
+		NameLocal:   movie.NameLocal,
+		NameEng:     movie.NameEng,
+		Type:        movie.Type,
+		Status:      movie.Status,
+		Duration: movie.Duration,
+		QualityType: movie.QualityType,
+		Year: movie.Year,
+		Description: movie.Description,
+		CreatedAt:   movie.CreatedAt,
+		UpdatedAt:   movie.UpdatedAt,
+	}
+
+	c.JSON(http.StatusOK, response)
+}

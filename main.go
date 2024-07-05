@@ -118,6 +118,7 @@ func main() {
 	//####### movies-information ##########
 	router.POST("/movies-information",MOVIE.CreateInformationMovie)
 	router.GET("/movies-information",MOVIE.GetAllInformationMovie)
+	router.GET("/movies-information/:id",MOVIE.GetOneInformationMovie)
 
 
 
