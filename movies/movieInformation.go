@@ -168,6 +168,8 @@ func GetOneInformationMovie( c * gin.Context){
 		Duration: movie.Duration,
 		QualityType: movie.QualityType,
 		Year: movie.Year,
+		Casters: movie.Casters,
+		Directors: movie.Directors,
 		Description: movie.Description,
 		CreatedAt:   movie.CreatedAt,
 		UpdatedAt:   movie.UpdatedAt,

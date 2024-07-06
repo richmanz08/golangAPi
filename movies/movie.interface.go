@@ -1,6 +1,7 @@
 package movies
 
 import (
+	"encoding/json"
 	"time"
 
 	"gorm.io/gorm"
@@ -20,16 +21,18 @@ type Movie struct {
 	Duration      float64        `gorm:"" `
 	Description   string         `gorm:"" `
 	QualityType   string         `gorm:""`
-	DirectorsID   string         `gorm:"" `
-	CastersID     string         `gorm:"" `
 	Season        int32          `gorm:"" ` // Required when type SERIES
 	Episode       int32          `gorm:"" ` // Required when type SERIES
 	DirectoryName string         `gorm:"unique" `
 	Year          int32          `gorm:"not null" `
+	Casters 	json.RawMessage `json:"Casters" gorm:"type:json"`
+	Directors 	json.RawMessage `json:"Directors" gorm:"type:json"`
 	CreatedAt     *time.Time     `gorm:"autoCreateTime"`
 	UpdatedAt     *time.Time     `gorm:"autoUpdateTime" `
 	DeletedAt     gorm.DeletedAt `gorm:"index"`
 }
+
+
 
 type MovieGroup struct {
 	ID         uint          `gorm:"primaryKey;autoIncrement" `

@@ -44,9 +44,11 @@ func AddMovie(c *gin.Context) {
 		DirectoryName: MovieParams.DirectoryName,
 		Year:          MovieParams.Year,
 		Description:   MovieParams.Description,
-		DirectorsID:   MovieParams.DirectorsID,
-		CastersID:     MovieParams.CastersID,
+		Casters: MovieParams.Casters,
+		Directors: MovieParams.Directors,
 	}
+
+	log.Println(newMovieDetail)
 
 	// 1. เช็คก่อนว่ามีซ้ำกันหรือไม่
 	createFolderResponse := createFolder(newMovieDetail)
