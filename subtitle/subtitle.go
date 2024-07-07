@@ -14,11 +14,7 @@ func GetAllFilenameSubtitleOfMovie(c *gin.Context) {
 
 	// Read and parse JSON body
 	var bodyParam ParamsSubtitle
-	if err := c.BindJSON(&bodyParam); err != nil {
-		log.Printf("Failed to parse JSON: %v", err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON"})
-		return
-	}
+	bodyParam.Directory =c.Request.URL.Query().Get("directory")
 
 	// Open the directory
 	folderLocation := fmt.Sprintf("D:/streamingfile/%s/subtitle/", bodyParam.Directory)
