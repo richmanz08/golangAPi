@@ -53,8 +53,12 @@ ffmpeg -y -i hotd.mp4 -vf scale=w=640:h=360:force_original_aspect_ratio=decrease
 //example ::: แปลงในทุกๆ 20 วินาที
 ffmpeg -i test.mp4 -vf fps=1/20 thumb%04d.png
 //example ::: แปลงในทุกๆ 5 วินาที
-ffmpeg -i [REPLACE_VIDEO_MP4_NAME] -vf fps=1/5 [REPLACE_DIRECTORY_NAME]%d.jpeg 
+ffmpeg -i [REPLACE_VIDEO_MP4_NAME] -vf fps=1/5 [REPLACE_DIRECTORY_NAME]thumb%d.jpeg 
 
 
 
 แนะนำ load file video from https://x2download.com/th110
+
+
+//อันนี้ที่ใช้ล่าสุด ลองแปลงแค่ 360 กับ 1080p
+ffmpeg -y -i hotd.mp4 -vf scale=w=640:h=360:force_original_aspect_ratio=decrease -c:a aac -ar 48000 -c:v h264 -profile:v main -crf 20 -sc_threshold 0 -g 48 -keyint_min 48 -hls_time 4 -hls_playlist_type vod  -b:v 800k -maxrate 856k -bufsize 1200k -b:a 96k -hls_segment_filename house_of_dragon_s1_01q360p_%03d.ts house_of_dragon_s1_01q360p.m3u8 -vf scale=w=1920:h=1080:force_original_aspect_ratio=decrease -c:a aac -ar 48000 -c:v h264 -profile:v main -crf 20 -sc_threshold 0 -g 48 -keyint_min 48 -hls_time 4 -hls_playlist_type vod -b:v 5000k -maxrate 5350k -bufsize 7500k -b:a 192k -hls_segment_filename house_of_dragon_s1_01q1080p_%03d.ts house_of_dragon_s1_01q1080p.m3u8

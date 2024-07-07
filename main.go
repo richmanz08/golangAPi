@@ -12,6 +12,7 @@ import (
 	P "api-webapp/another"
 	COM "api-webapp/components"
 	MOVIE "api-webapp/movies"
+	SUBT "api-webapp/subtitle"
 	"fmt"
 
 	"github.com/gin-gonic/gin"
@@ -119,6 +120,10 @@ func main() {
 	router.POST("/movies-information",MOVIE.CreateInformationMovie)
 	router.GET("/movies-information",MOVIE.GetAllInformationMovie)
 	router.GET("/movies-information/:id",MOVIE.GetOneInformationMovie)
+
+
+	//###### subtitle ########
+	router.GET("/subtitles",SUBT.GetAllFilenameSubtitleOfMovie)
 
 
 

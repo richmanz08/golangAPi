@@ -171,6 +171,7 @@ func GetOneInformationMovie( c * gin.Context){
 		Casters: movie.Casters,
 		Directors: movie.Directors,
 		Description: movie.Description,
+		DirectoryName: movie.DirectoryName,
 		CreatedAt:   movie.CreatedAt,
 		UpdatedAt:   movie.UpdatedAt,
 	}
