@@ -19,7 +19,7 @@ type MediaURLStruct struct {
 }
 
 
-var filerootSubtitle = "D:/streamingfile/house_of_dragon/subtitle/"
+var filerootSubtitle = "D:/streamingfile/"
 var CONFIG_CONTENT_TYPE = "Content-Type"
 
 func ServerURLFileMediaM3U8(c *gin.Context) {
@@ -73,27 +73,13 @@ log.Println(result)
 }
 
 func ServerURLFileSubtitle(c *gin.Context) {
-	var subtitleOptions SubtitleURLStruct
-
-	movieID := c.Request.URL.Query().Get("mID")
-	subtitleLang := c.Request.URL.Query().Get("lang")
-
-	subtitleOptions.MovieID = movieID
-	subtitleOptions.Language = subtitleLang
-
-	// fmt.Println("movieID :::",movieID)
-	// fmt.Println("subtitle_lang :::",subtitle_lang)
-	// c.JSON(http.StatusOK,subtitleOptions)
-	// fileRoot := "assets/"
-	fileName := "example_subtitle" // waiting... db for know name file
-	fileType := ".vtt"
-	fileLang := strings.ToUpper(subtitleOptions.Language)
-	resultFileName := fmt.Sprintf("http://localhost:8080/%s%s%s%s", filerootSubtitle, fileName, fileLang, fileType)
-	// fmt.Println("fileName :::",result_file_name)
-	// fmt.Println("results path :::",fileRoot+result_file_name)
-
-	// c.Writer.Header().Set("Content-Type","WEBVTT")
-	c.JSON(http.StatusOK, resultFileName)
+	c.Writer.Header().Set("Content-Type","WEBVTT")
+	directory := c.Param("directory")
+	filename := c.Param("filename")
+	resultFileName := fmt.Sprintf("%s%s/subtitle/%s", filerootSubtitle,directory, filename)
+	fmt.Println("file dir is :::",resultFileName)
+	c.File(resultFileName)
+	c.Status(http.StatusOK)
 }
 
 func ServerFileThumbnail(c *gin.Context) {
