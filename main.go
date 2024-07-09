@@ -106,7 +106,7 @@ func main() {
 	//###### video-streaming ######
 	// router.GET("/movie",COM.VideoStreamingRender)
 	router.GET("/movie/:name", VIDEO.ServerFileMedia)
-	router.GET("/media", VIDEO.ServerURLFileMediaM3U8)
+	// router.GET("/media", VIDEO.ServerURLFileMediaM3U8)
 	router.GET("/subtitle/:directory/:filename", VIDEO.ServerURLFileSubtitle)
 	router.GET("/thumbnail/:root/:file", VIDEO.ServerFileThumbnail)
 	// router.GET("/media/{mId:[0-9]+}/stream/", VIDEO.StreamHandle)

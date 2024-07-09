@@ -2,7 +2,6 @@ package video
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -18,28 +17,26 @@ type MediaURLStruct struct {
 	MovieID string `json:"mID"`
 }
 
-
-
 var CONFIG_CONTENT_TYPE = "Content-Type"
 
-func ServerURLFileMediaM3U8(c *gin.Context) {
-	var mediaOptions MediaURLStruct
-	movieID := c.Request.URL.Query().Get("mID")
-	mediaOptions.MovieID = movieID
+// func ServerURLFileMediaM3U8(c *gin.Context) {
+// 	var mediaOptions MediaURLStruct
+// 	movieID := c.Request.URL.Query().Get("mID")
+// 	mediaOptions.MovieID = movieID
 
-	URLRoot := "movie/"
-	fileName := "hotd_bandwidth" // waiting... db for know name file
-	fileType := ".m3u8"
+// 	URLRoot := "movie/"
+// 	fileName := "hotd_bandwidth" // waiting... db for know name file
+// 	fileType := ".m3u8"
 
-	resultFileName := fmt.Sprintf("http://localhost:8080/%s%s%s", URLRoot, fileName, fileType)
-	c.JSON(http.StatusOK, resultFileName)
-}
+// 	resultFileName := fmt.Sprintf("http://localhost:8080/%s%s%s", URLRoot, fileName, fileType)
+// 	c.JSON(http.StatusOK, resultFileName)
+// }
 func ServerFileMedia(c *gin.Context) {
 
 	url := c.Param("name")
 
 	if len(url) == 0 {
-		c.JSON(http.StatusBadRequest,"ERROR LOAD FILE OR DESTINATION PATH")
+		c.JSON(http.StatusBadRequest, "ERROR LOAD FILE OR DESTINATION PATH")
 		return
 	}
 
@@ -53,12 +50,6 @@ func ServerFileMedia(c *gin.Context) {
 		directoryName = dir[0]
 	}
 
-	
-	
-
-	
-
-
 	if typeFileName == "ts" {
 		c.Writer.Header().Set(CONFIG_CONTENT_TYPE, "application/octet-stream")
 	} else {
@@ -66,34 +57,61 @@ func ServerFileMedia(c *gin.Context) {
 	}
 
 	bucket := os.Getenv("BUCKET_FILE_URL")
-	result := bucket + directoryName + "/video/"+ url
-log.Println(result)
+	result := bucket + directoryName + "/video/" + url
+	
 	c.File(result)
 
 }
 
 func ServerURLFileSubtitle(c *gin.Context) {
-	c.Writer.Header().Set("Content-Type","WEBVTT")
-	directory := c.Param("directory")
-	filename := c.Param("filename")
-	bucket := os.Getenv("BUCKET_FILE_URL")
-	resultFileName := fmt.Sprintf("%s%s/subtitle/%s", bucket,directory, filename)
-	fmt.Println("file dir is :::",resultFileName)
-	c.File(resultFileName)
-	c.Status(http.StatusOK)
+	c.Writer.Header().Set("Content-Type", "text/vtt") // Set Content-Type to WebVTT
+    
+    directory := c.Param("directory")
+    filename := c.Param("filename")
+    
+    bucket := os.Getenv("BUCKET_FILE_URL")
+    
+    // Construct the file path
+    resultFileName := fmt.Sprintf("%s%s/subtitle/%s", bucket, directory, filename)
+    fmt.Println("File path:", resultFileName)
+    
+    // Check if the file exists
+    if _, err := os.Stat(resultFileName); os.IsNotExist(err) {
+        c.JSON(http.StatusNotFound, gin.H{"error": "Subtitle file not found"})
+        return
+    }
+    
+    // Serve the file
+    c.File(resultFileName)
 }
 
 func ServerFileThumbnail(c *gin.Context) {
-	c.Writer.Header().Set(CONFIG_CONTENT_TYPE, "image/jpeg")
+
+	c.Writer.Header().Set("Content-Type", "image/jpeg")
+
 	directory := c.Param("root")
-	Filename := c.Param("file")
+	filename := c.Param("file")
 
 	bucket := os.Getenv("BUCKET_FILE_URL")
 
-	result := bucket + directory + "/thumbnail/"+ Filename+".jpeg"
-	fmt.Println(result)
+	// Construct the file path
+	result := fmt.Sprintf("%s%s/thumbnail/%s.jpeg", bucket, directory, filename)
+	fmt.Println("Serving file:", result)
+
+	// Check if the file exists
+	if _, err := os.Stat(result); os.IsNotExist(err) {
+		c.JSON(http.StatusNotFound, gin.H{"error": "File not found"})
+		return
+	}
+
+	// Check if the file exists
+	if _, err := os.Stat(result); os.IsNotExist(err) {
+		c.JSON(http.StatusNotFound, gin.H{"error": "File not found"})
+		return
+	}
+
+	// Serve the file
 	c.File(result)
-	c.Status(http.StatusOK)
 }
 
 //https://github.com/aofiee/Music-Streaming-HLS-Go-fiber/blob/main/main.go
