@@ -19,7 +19,7 @@ type MediaURLStruct struct {
 }
 
 
-var filerootSubtitle = "D:/streamingfile/"
+
 var CONFIG_CONTENT_TYPE = "Content-Type"
 
 func ServerURLFileMediaM3U8(c *gin.Context) {
@@ -76,7 +76,8 @@ func ServerURLFileSubtitle(c *gin.Context) {
 	c.Writer.Header().Set("Content-Type","WEBVTT")
 	directory := c.Param("directory")
 	filename := c.Param("filename")
-	resultFileName := fmt.Sprintf("%s%s/subtitle/%s", filerootSubtitle,directory, filename)
+	bucket := os.Getenv("BUCKET_FILE_URL")
+	resultFileName := fmt.Sprintf("%s%s/subtitle/%s", bucket,directory, filename)
 	fmt.Println("file dir is :::",resultFileName)
 	c.File(resultFileName)
 	c.Status(http.StatusOK)
@@ -88,7 +89,8 @@ func ServerFileThumbnail(c *gin.Context) {
 	Filename := c.Param("file")
 
 	bucket := os.Getenv("BUCKET_FILE_URL")
-	result := bucket + directory + "/thumbnail/"+ Filename
+
+	result := bucket + directory + "/thumbnail/"+ Filename+".jpeg"
 	fmt.Println(result)
 	c.File(result)
 	c.Status(http.StatusOK)
