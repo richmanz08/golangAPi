@@ -75,7 +75,7 @@ func main() {
 	router.POST("/survive-heal",L.SurviveHeal)
 	router.DELETE("/kill-user",L.KillSurvive)
 	// router.GET("/checklife-user",L.CheckUserIsSurvive)
-	// router.GET("/kill-user",L.KillUserSurvive)
+
 	// 1.1 session
 	// router.GET("/save-session",L.CheckInsession)
 	// router.GET("/checkout",L.CheckOutSession)
@@ -104,9 +104,7 @@ func main() {
 	router.GET("/sumofmember", COM.CounterMember)
 
 	//###### video-streaming ######
-	// router.GET("/movie",COM.VideoStreamingRender)
 	router.GET("/movie/:name", VIDEO.ServerFileMedia)
-	// router.GET("/media", VIDEO.ServerURLFileMediaM3U8)
 	router.GET("/subtitle/:directory/:filename", VIDEO.ServerURLFileSubtitle)
 	router.GET("/thumbnail/:root/:file", VIDEO.ServerFileThumbnail)
 	// router.GET("/media/{mId:[0-9]+}/stream/", VIDEO.StreamHandle)

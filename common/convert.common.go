@@ -1,7 +1,6 @@
 package common
 
 import (
-	"log"
 	"strconv"
 
 	"gorm.io/gorm"
@@ -36,6 +35,6 @@ func Paginate(db *gorm.DB, page, perPage int) (*gorm.DB, error) {
     }
 
     offset := (page - 1) * perPage
-	log.Println("offset:",offset,"  perPage: ",perPage)
+
     return db.Offset(offset).Limit(perPage), nil
 }

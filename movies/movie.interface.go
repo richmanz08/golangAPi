@@ -54,6 +54,7 @@ type ParamsMovies struct {
 	MovieGroupID  int  
 	PageSize int `json:"pageSize" binding:"required"`
 	Current  int `json:"current" binding:"required"`
+	Season int `json:"season"`
 }
 
 type ParamsMovieGroup struct {

@@ -19,18 +19,7 @@ type MediaURLStruct struct {
 
 var CONFIG_CONTENT_TYPE = "Content-Type"
 
-// func ServerURLFileMediaM3U8(c *gin.Context) {
-// 	var mediaOptions MediaURLStruct
-// 	movieID := c.Request.URL.Query().Get("mID")
-// 	mediaOptions.MovieID = movieID
 
-// 	URLRoot := "movie/"
-// 	fileName := "hotd_bandwidth" // waiting... db for know name file
-// 	fileType := ".m3u8"
-
-// 	resultFileName := fmt.Sprintf("http://localhost:8080/%s%s%s", URLRoot, fileName, fileType)
-// 	c.JSON(http.StatusOK, resultFileName)
-// }
 func ServerFileMedia(c *gin.Context) {
 
 	url := c.Param("name")
