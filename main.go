@@ -113,11 +113,10 @@ func main() {
 	//####### movies ##########
 	router.POST("/movies",MOVIE.AddMovie)
 	router.GET("/movies",MOVIE.GetAllMovie)
-
-	//####### movies-information ##########
 	router.POST("/movies-information",MOVIE.CreateInformationMovie)
 	router.GET("/movies-information",MOVIE.GetAllInformationMovie)
 	router.GET("/movies-information/:id",MOVIE.GetOneInformationMovie)
+	router.GET("/movies/:MovieGroupID/episodes-option",MOVIE.GetOptionsSeries)
 
 
 	//###### subtitle ########

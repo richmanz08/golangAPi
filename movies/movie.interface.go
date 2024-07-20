@@ -74,3 +74,9 @@ type ResponseMovieGroup struct {
 	CreatedAt  *time.Time
 	UpdatedAt  *time.Time
 }
+
+type ResponseEpisodesOption struct {
+	Season int32 `json:"season"`
+	EpisodeTotal int `json:"episode_total"`
+	
+}
