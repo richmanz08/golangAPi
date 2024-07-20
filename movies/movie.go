@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -113,87 +112,3 @@ func GetAllMovie(c *gin.Context){
 }
 
 
-// this help funtion for refactor code cleanup
-func parseQueryParams(c *gin.Context) (ParamsMovies, error) {
-	var params ParamsMovies
-
-	movieGroupIdStr := c.DefaultQuery("MovieGroupID", "0")
-	pageSizeStr := c.DefaultQuery("pageSize", "10")
-	currentStr := c.DefaultQuery("current", "1")
-	seasonStr := c.DefaultQuery("season", "0")
-
-	movieGroupID, err := strconv.Atoi(movieGroupIdStr)
-	if err != nil {
-		return params, err
-	}
-
-	pageSize, err := strconv.Atoi(pageSizeStr)
-	if err != nil {
-		return params, err
-	}
-
-	current, err := strconv.Atoi(currentStr)
-	if err != nil {
-		return params, err
-	}
-
-	season, err := strconv.Atoi(seasonStr)
-	if err != nil {
-		return params, err
-	}
-
-	params.MovieGroupID = movieGroupID
-	params.PageSize = pageSize
-	params.Current = current
-	params.Season = season
-
-	return params, nil
-}
-func createDynamicQuery(params ParamsMovies) *gorm.DB {
-	dynamicQuery := DB.Model(&Movie{})
-
-	if params.MovieGroupID != 0 {
-		dynamicQuery = dynamicQuery.Where("movie_group_id = ?", params.MovieGroupID)
-	}
-
-	if params.Season != 0 {
-		dynamicQuery = dynamicQuery.Where("season = ?", params.Season)
-	}
-
-	return dynamicQuery
-}
-func countTotalRecords(dynamicQuery *gorm.DB) (int64, error) {
-	var totalCount int64
-	countTotal := dynamicQuery.Count(&totalCount)
-	if countTotal.Error != nil {
-		return 0, countTotal.Error
-	}
-	return totalCount, nil
-}
-func handlePaginationAndQuery(dynamicQuery *gorm.DB, params ParamsMovies, movies *[]Movie) error {
-	paginatedDB, err := common.Paginate(dynamicQuery, params.Current, params.PageSize)
-	if err != nil {
-		return err
-	}
-
-	queryFindAll := paginatedDB.Find(movies)
-	if queryFindAll.Error != nil {
-		return queryFindAll.Error
-	}
-
-	if len(*movies) == 0 && params.Current > 1 {
-		params.Current = 1
-		dynamicQuery = createDynamicQuery(params)
-		paginatedDB, err = common.Paginate(dynamicQuery, params.Current, params.PageSize)
-		if err != nil {
-			return err
-		}
-
-		queryFindAll = paginatedDB.Find(movies)
-		if queryFindAll.Error != nil {
-			return queryFindAll.Error
-		}
-	}
-
-	return nil
-}

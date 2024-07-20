@@ -11,6 +11,7 @@ import (
 	VIDEO "api-webapp/Stream"
 	P "api-webapp/another"
 	COM "api-webapp/components"
+	CONTINUE "api-webapp/continue"
 	MOVIE "api-webapp/movies"
 	SUBT "api-webapp/subtitle"
 	"fmt"
@@ -58,10 +59,11 @@ func main() {
 
 	gormDB.AutoMigrate(&MOVIE.Movie{})
 	gormDB.AutoMigrate(&MOVIE.MovieGroup{})
-
+	gormDB.AutoMigrate(&CONTINUE.ContinuePlay{})
 
 	L.DB = dbOld
 	MOVIE.DB = gormDB
+	CONTINUE.DB = gormDB
 
 	// Pass Variable to member.go
 
@@ -122,7 +124,8 @@ func main() {
 	//###### subtitle ########
 	router.GET("/subtitles",SUBT.GetAllFilenameSubtitleOfMovie)
 
-
+	//###### continue play ########
+	router.GET("/continue-play",CONTINUE.GetMyContinuePlay)
 
 	log.Fatal(router.Run(":8080"))
 }
