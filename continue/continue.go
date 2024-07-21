@@ -1,27 +1,23 @@
 package continueplay
 
 import (
+	AUTH "api-webapp/Login"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
 func GetMyContinuePlay(c *gin.Context) {
-// 	au, err := AUTH.ExtractTokenMetadata(c.Request)
-// 	fmt.Println(au.AccessUuid,au.UserId)
-// 	if err != nil {
-// 		c.JSON(http.StatusUnauthorized, "unauthorized")
-// 		return
-// 	}
+	extractResult,err := AUTH.ExtractUserTokenMetadata(c.Request)
 
-// 	userId, err := AUTH.FetchAuth(au)
-// 	if err != nil {
-// 		c.JSON(http.StatusUnauthorized, "Unauthorized")
-// 	}
-// 	_userId := userId
-// fmt.Println(_userId)
-	var continuePlays []ContinuePlay
-	queryTable := DB.Model(&ContinuePlay{}).Where("continue_user_id = ?", uint(1))
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, "Token user error")
+		return
+	}
+
+
+	var continuePlays []ResponseContinuePlay
+	queryTable := DB.Model(&ContinuePlay{}).Where("continue_user_id = ?", uint(extractResult.UserID))
 	if err := queryTable.Find(&continuePlays).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database query failed"})
 		return

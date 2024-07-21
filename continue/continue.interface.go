@@ -17,3 +17,10 @@ type ContinuePlay struct {
 	CreatedAt    *time.Time `json:"-" gorm:"autoCreateTime"`
 	UpdatedAt    *time.Time `json:"-" gorm:"autoUpdateTime" `
 }
+
+type ResponseContinuePlay struct {
+	Id           uint       `json:"id" `
+	MovieGroupID uint       `json:"movie_group_id"`
+	MovieID      uint       `json:"movie_id"`
+	StampTime    float64    `json:"stamp_time"`
+}

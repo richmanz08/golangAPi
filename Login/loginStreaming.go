@@ -13,78 +13,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type responseVerifyPIN struct {
-	AccountId int32  `json:"account_id" `
-	UserID    int32  `json:"idusers"`
-	UserIndex int32  `json:"user_idx"`
-	Username  string `json:"username" `
-	ImageURL  string `json:"image_url"`
-	Expire    bool   `json:"account_is_expire"`
-}
-type responseVerifyPINformatJWT struct {
-	JwtoffVerifyPIN string `json:"access_jwt_pin"`
-}
-
-type myUserStruct struct {
-	UserIndex int32  `json:"user_idx"`
-	Username  string `json:"username" `
-	ImageURL  string `json:"image_url"`
-}
-
-type userScanTableStruct struct {
-	UserID    int32  `json:"idusers" binding:"required"`
-	AccountId int32  `json:"account_id" binding:"required"`
-	UserIndex int32  `json:"user_idx" binding:"required"`
-	Username  string `json:"username" binding:"required"`
-	ImageURL  string `json:"image_url" binding:"required"`
-	PIN       string `json:"pin" binding:"required"`
-}
-type handleParamsRouteLoginStruct struct {
-	Email    string `json:"email"  binding:"required"`
-	Password string `json:"password"  binding:"required"`
-}
-type handleParamsRoutePINStruct struct {
-	AccountId     int32  `json:"account_id" binding:"required"`
-	UserIndex     int32  `json:"user_idx"  binding:"required"`
-	PIN           string `json:"pin"  binding:"required"`
-	ConnectionKey string `json:"force_connection_key"  binding:"required"`
-}
-type responseStructLogin struct {
-	AccountId int32          `json:"account_id" `
-	Email     string         `json:"email" `
-	Role      string         `json:"role" `
-	Reneval   string         `json:"reneval" `
-	UserList  []myUserStruct `json:"user_list" `
-	Token     *TokenStruct   `json:"token"`
-}
-
-type accountFullStruct struct {
-	AccountId int32  `json:"account_id" `
-	Password  string `json:"password" `
-	Email     string `json:"mail" `
-	Firstname string `json:"firstname" `
-	Lastname  string `json:"lastname" `
-	Role      string `json:"role" `
-	Phone     string `json:"phone"`
-	Status    string `json:"status"`
-	Reneval   string `json:"reneval"`
-}
-
-type checkReneval struct {
-	Reneval string `json:"reneval" `
-}
-type SurviveParams struct {
-	UserID int32  `json:"idusers" binding:"required"`
-	Device string `json:"is_device"  binding:"required"`
-	LastLogin string `json:"last_login"  binding:"required"`
-}
-
-type ErrorMessageVerifyPIN struct {
-	ErrerCode int32 `json:"error_code"`
-	Message string `json:"error_message"`
-	StayinDevice string `json:"are_logged_in_device"`
-}
-
 func LoginStreamingAccount(c *gin.Context) {
 	var params handleParamsRouteLoginStruct
 	var account responseStructLogin
@@ -236,6 +164,13 @@ func VerifyPINStreamingAccount(c *gin.Context) {
 
 func SurviveHeal(c *gin.Context) {
 	// set session login user on Redis server ...
+	extractResult,err := ExtractUserTokenMetadata(c.Request)
+
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, "Token user error")
+	}
+
+
 	var params SurviveParams
 	// 1. handle body params
 	if err := c.ShouldBindJSON(&params); err != nil {
@@ -245,7 +180,7 @@ func SurviveHeal(c *gin.Context) {
 	// 2. set user is survive on redis
 	newValue := params.Device +"|"+params.LastLogin
 	log.Println(newValue)
-	_, era := client.Set(strconv.Itoa(int(params.UserID)), newValue, 120*time.Minute).Result()
+	_, era := client.Set(strconv.Itoa(int(extractResult.UserID)), newValue, 120*time.Minute).Result()
 	if era != nil {
 		c.JSON(http.StatusBadGateway, "Error created session on redis server")
 		return
@@ -255,11 +190,20 @@ func SurviveHeal(c *gin.Context) {
 }
 
 func KillSurvive(c *gin.Context) {
-	// 1. handle header params
-	userID := c.Request.URL.Query().Get("userID")
 
+
+	extractResult,err := ExtractUserTokenMetadata(c.Request)
+
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, "Token user error")
+		return
+	}
+
+	// 1. handle header params
+	// userID := c.Request.URL.Query().Get("userID")
+	userID := strconv.Itoa(extractResult.UserID)
 	// 2. remove user survive in system redis server
-	_, err := client.Del(userID).Result()
+	_, err = client.Del(userID).Result()
 	if err != nil {
 		c.JSON(http.StatusBadRequest, "user not found")
 		return
@@ -409,106 +353,27 @@ func CreateJWTofPIN(data responseVerifyPIN) (string, error) {
 	return jwt, nil
 }
 
-//save concept code
-// func VerifyPINStreamingAccount(c *gin.Context) {
-// 	var params handleParamsRoutePINStruct
-// 	// var matchUser userJsonStructofJWT
-// 	// var stopedLoop bool = false
-// 	var res responseVerifyPINformatJWT
+func ExtractUserTokenMetadata(r *http.Request) (*ResponseExtractUserToken, error) {
+	token, err := VerifyToken(r)
+	if err != nil {
+		return nil, err
+	}
+	claims, ok := token.Claims.(jwt.MapClaims)
+	fmt.Println(claims)
+	if ok && token.Valid {
+		userId, err := strconv.ParseUint(fmt.Sprintf("%.f", claims["idusers"]), 10, 64)
+		if err != nil {
+			return nil, err
+		}
 
-// 	message_error1 := "Verify PIN Failed"
-
-// 	if err := c.ShouldBindJSON(&params); err != nil {
-// 		c.JSON(http.StatusBadRequest, message_error1)
-// 		return
-// 	}
-
-// 	// go func() {
-// 		checkReneval :=  QueryGetRenevalofAccount(params.AccountId)
-// 		// fmt.Println(checkReneval)
-// 	// }()
-
-// 	userOfAccount, err := QueryDataAccount(params.AccountId, params.UserIndex)
-// 	if err != nil {
-// 		c.JSON(http.StatusBadRequest, err)
-// 		return
-// 	}
-// 	// fmt.Println(Hash(params.PIN))
-// 	verifyPin := ChekHash(params.PIN, userOfAccount.PIN)
-// 	if !verifyPin {
-// 		c.JSON(http.StatusBadRequest, " PIN not match")
-// 		return
-// 	}
-// 	// jwtUser := userOfAccount.UserJWT
-// 	// claims := jwt.MapClaims{}
-// 	// jsonJWT, err := jwt.ParseWithClaims(jwtUser, claims, func(token *jwt.Token) (interface{}, error) {
-// 	// 	return []byte(MY_APPLICATION_JWT_KEY), nil
-// 	// })
-// 	// if err != nil {
-// 	// 	c.JSON(http.StatusBadRequest, message_error1)
-// 	// 	return
-// 	// }
-
-// 	// claims, okr := jsonJWT.Claims.(jwt.MapClaims)
-
-// 	// if !okr {
-// 	// 	fmt.Println("error okr")
-// 	// }
-// 	// listUserArray := claims["user_list"].([]interface{})
-
-// 	// for _, item := range listUserArray {
-// 	// 	if !stopedLoop {
-
-// 	// 		var info userJsonStructofJWT
-// 	// 		if rec, ok := item.(map[string]interface{}); ok {
-// 	// 			for key, val := range rec {
-// 	// 				if key == "usr_idx" {
-// 	// 					info.UserIndex = fmt.Sprintf("%v", val)
-// 	// 				} else if key == "username" {
-// 	// 					info.Username = fmt.Sprintf("%v", val)
-// 	// 				} else if key == "pin" {
-// 	// 					info.PIN = fmt.Sprintf("%v", val)
-// 	// 				}else if  key == "image_url"{
-// 	// 					info.ImageURL = fmt.Sprintf("%v", val)
-// 	// 				}
-// 	// 			}
-// 	// 		}
-// 	// 		var a bool = info.UserIndex == params.UserIndex
-// 	// 		var b bool = info.PIN == params.PIN
-// 	// 		if a && b {
-// 	// 			matchUser.PIN = info.PIN
-// 	// 			matchUser.Username = info.Username
-// 	// 			matchUser.UserIndex = info.UserIndex
-// 	// 			matchUser.ImageURL = info.ImageURL
-// 	// 			stopedLoop = true
-
-// 	// 		}
-// 	// 	}
-
-// 	// }
-
-// 	// if len(matchUser.Username) == 0 {
-// 	// 	c.JSON(http.StatusBadRequest, message_error1)
-// 	// 	return
-// 	// }
-//  jwtOfaccessPINverify,err :=	CreateJWTofPIN(responseVerifyPIN{
-// 		AccountId: userOfAccount.AccountId,
-// 		UserIndex: userOfAccount.UserIndex,
-// 		Username: userOfAccount.Username,
-// 		ImageURL: userOfAccount.ImageURL,
-// 		Expire:checkReneval,
-// 	})
-// 	if err != nil {
-// 		c.JSON(http.StatusBadRequest, "Generate JWT Failed")
-// 		return
-// 	}
-// 	res.JwtoffVerifyPIN = jwtOfaccessPINverify
-// 	// res.AccountId = userOfAccount.AccountId
-// 	// res.UserIndex = userOfAccount.UserIndex
-// 	// res.Username = userOfAccount.Username
-// 	// res.ImageURL = userOfAccount.ImageURL
-// 	c.JSON(http.StatusOK, res)
-// }
-
-// for make sessions verifyPin
-// https://gowebexamples.com/sessions
+		accountId, err := strconv.ParseUint(fmt.Sprintf("%.f", claims["account_id"]), 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		return &ResponseExtractUserToken{
+			AccountID: int(accountId),
+			UserID:    int(userId),
+		}, nil
+	}
+	return nil, err
+}
