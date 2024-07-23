@@ -57,9 +57,9 @@ func main() {
 	}
 	// defer db.Close()
 
-	gormDB.AutoMigrate(&MOVIE.Movie{})
-	gormDB.AutoMigrate(&MOVIE.MovieGroup{})
-	gormDB.AutoMigrate(&CONTINUE.ContinuePlay{})
+	// gormDB.AutoMigrate(&MOVIE.Movie{})
+	// gormDB.AutoMigrate(&MOVIE.MovieGroup{})
+	// gormDB.AutoMigrate(&CONTINUE.ContinuePlay{})
 
 	L.DB = dbOld
 	MOVIE.DB = gormDB
@@ -116,7 +116,7 @@ func main() {
 	router.POST("/movies",MOVIE.AddMovie)
 	router.GET("/movies",MOVIE.GetAllMovie)
 	router.POST("/movies-information",MOVIE.CreateInformationMovie)
-	router.GET("/movies-information",MOVIE.GetAllInformationMovie)
+	router.GET("/movies-information",MOVIE.GetAllMovieGroup)
 	router.GET("/movies-information/:id",MOVIE.GetOneInformationMovie)
 	router.GET("/movies/:MovieGroupID/episodes-option",MOVIE.GetOptionsSeries)
 

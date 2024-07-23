@@ -2,8 +2,6 @@ package common
 
 import (
 	"strconv"
-
-	"gorm.io/gorm"
 )
 
 func convertInt32(str string) int32 {
@@ -20,21 +18,4 @@ func convertFloat64(str string) float64 {
 	}
 	return floatValue
 }
-const (
-    DefaultPage = 1
-    DefaultPerPage = 10
-)
 
-func Paginate(db *gorm.DB, page, perPage int) (*gorm.DB, error) {
-    if page < 1 {
-        page = DefaultPage
-    }
-
-    if perPage < 1 {
-        perPage = DefaultPerPage
-    }
-
-    offset := (page - 1) * perPage
-
-    return db.Offset(offset).Limit(perPage), nil
-}

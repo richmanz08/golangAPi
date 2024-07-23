@@ -167,3 +167,112 @@ func handlePaginationAndQuery(dynamicQuery *gorm.DB, params ParamsMovies, movies
 
 	return nil
 }
+
+// this help GetAllMovieGroup
+func readQueryStringMovieGroup(c *gin.Context) (ParamsMovieGroup, error ){
+	var params ParamsMovieGroup
+	pageSizeStr := c.Query("pageSize")
+    currentStr := c.Query("current")
+	if pageSizeStr != "" {
+        ps, err := strconv.Atoi(pageSizeStr)
+        if err == nil {
+            params.PageSize = ps
+        } else {
+           
+            return params,err
+        }
+    }
+
+	if currentStr != "" {
+        ps, err := strconv.Atoi(currentStr)
+        if err == nil {
+            params.Current = &ps
+        } else {
+           
+			return params,err
+        }
+    }
+
+	if name := c.Query("Name"); name != "" {
+		params.Name = name
+	}
+	if status := c.Query("Status"); status != "" {
+		params.Status = status
+	}
+	if includesIds := c.Query("IncludesMovieGroupIds"); includesIds != "" {
+		params.InCludesMovieGroupIds = includesIds
+	}
+	if excludesIds := c.Query("ExcludesMovieGroupIds"); excludesIds != "" {
+		params.ExCludesMovieGroupIds = excludesIds
+	}
+
+	return params, nil
+
+}
+func createDynamicQueryMovieGroup(params ParamsMovieGroup) (*gorm.DB, error) {
+	dynamicQuery := DB.Model(&MovieGroup{})
+
+	if params.Name != "" {
+		dynamicQuery = dynamicQuery.Where("name_eng LIKE ? OR name_local LIKE ?", "%"+params.Name+"%", "%"+params.Name+"%")
+	}
+
+	if params.Status != "" {
+		dynamicQuery = dynamicQuery.Where("status IN (?)", params.Status)
+	}
+
+	if params.InCludesMovieGroupIds != "" {
+        includesIds, err := common.ConvertToIDSlice(params.InCludesMovieGroupIds)
+        if err != nil {
+			return nil, err
+        }
+        dynamicQuery = dynamicQuery.Where("id IN ?", includesIds)
+    }
+
+    if params.ExCludesMovieGroupIds != "" {
+        excludesIds, err := common.ConvertToIDSlice(params.ExCludesMovieGroupIds)
+        if err != nil {
+			return nil, err
+        }
+        dynamicQuery = dynamicQuery.Where("id NOT IN ?", excludesIds)
+    }
+	return dynamicQuery,nil
+}
+ func handlePaginationAndQueryMovieGroup(dynamicQuery *gorm.DB, params *ParamsMovieGroup, movies *[]MovieGroup) error {
+
+	queryRows, err := common.Paginate(dynamicQuery, *params.Current, params.PageSize)
+	if err != nil {
+		return err
+	} 
+
+	queryFindAll := queryRows.Find(&movies)
+	if queryFindAll.Error != nil {
+		return queryFindAll.Error
+	}
+
+	
+	if len(*movies) == 0 && *params.Current > 1 {
+		*params.Current = 1
+
+		// Create a fresh query for the fallback
+		fallbackQuery, err := createDynamicQueryMovieGroup(*params)
+		if err != nil {
+			return err
+		}
+		fallbackDB, err := common.Paginate(fallbackQuery, *params.Current, params.PageSize)
+
+		if err != nil {
+			return err
+		}
+
+		// Empty the movies slice before performing the fallback query
+		*movies = nil
+
+		queryFindAllFallback := fallbackDB.Find(&movies)
+
+		if queryFindAllFallback.Error != nil {
+			return queryFindAllFallback.Error
+		}
+	}
+
+	return nil
+}
