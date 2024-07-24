@@ -13,7 +13,9 @@ type ContinuePlay struct {
 	ContinueUserID       uint       `json:"continue_user_id" gorm:"not null"`
 	MovieGroupID uint       `json:"movie_group_id" gorm:"not null"`
 	MovieID      uint       `json:"movie_id" gorm:"not null"`
-	StampTime    float64    `json:"stamp_time" gorm:"not null" `
+	Season    float64 		`json:"season" `
+	StampTime    string    `json:"stamp_time" gorm:"not null;type:time"`
+		EndTime    string  `json:"end_time" gorm:"not null;type:time"`
 	CreatedAt    *time.Time `json:"-" gorm:"autoCreateTime"`
 	UpdatedAt    *time.Time `json:"-" gorm:"autoUpdateTime" `
 }
@@ -22,5 +24,7 @@ type ResponseContinuePlay struct {
 	Id           uint       `json:"id" `
 	MovieGroupID uint       `json:"movie_group_id"`
 	MovieID      uint       `json:"movie_id"`
-	StampTime    float64    `json:"stamp_time"`
+	StampTime    string    `json:"stamp_time"`
+	EndTime    string 		`json:"end_time" `
+	Season    float64 		`json:"season" `
 }

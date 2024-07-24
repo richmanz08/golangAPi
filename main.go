@@ -57,9 +57,9 @@ func main() {
 	}
 	// defer db.Close()
 
-	// gormDB.AutoMigrate(&MOVIE.Movie{})
-	// gormDB.AutoMigrate(&MOVIE.MovieGroup{})
-	// gormDB.AutoMigrate(&CONTINUE.ContinuePlay{})
+	gormDB.AutoMigrate(&MOVIE.Movie{})
+	gormDB.AutoMigrate(&MOVIE.MovieGroup{})
+	gormDB.AutoMigrate(&CONTINUE.ContinuePlay{})
 
 	L.DB = dbOld
 	MOVIE.DB = gormDB

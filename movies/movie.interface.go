@@ -17,7 +17,7 @@ type Movie struct {
 	NameEng       string          `gorm:"unique" `
 	Type          string          `gorm:"not null" ` // MOVIE OR SERIES
 	Status        string          `gorm:"not null" ` // ACTIVE OR INACTIVE
-	Duration      float64         `gorm:"" `
+	Duration      string         `gorm:"type:time" `
 	Description   string          `gorm:"" `
 	QualityType   string          `gorm:""`
 	Season        int32           `gorm:"" ` // Required when type SERIES
