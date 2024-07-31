@@ -75,6 +75,10 @@ type ResponseMovieGroup struct {
 	Status      string
 	PosterPath  string
 	Description string
+	MovieTime    string  `json:"movie_time" gorm:"not null;type:time"`
+	MovieYear   int  `json:"movie_year" gorm:"not null"`
+	MovieSeason int     `json:"movie_season"`
+	MovieQuality string `json:"movie_quality"`
 	CreatedAt   *time.Time
 	UpdatedAt   *time.Time
 }
