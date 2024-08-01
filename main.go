@@ -126,6 +126,7 @@ func main() {
 
 	//###### continue play ########
 	router.GET("/continue-play",CONTINUE.GetMyContinuePlay)
+	router.POST("/continue-play",CONTINUE.CreateMyContinuePlay)
 
 	log.Fatal(router.Run(":8080"))
 }
