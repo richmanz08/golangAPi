@@ -4,7 +4,6 @@ import (
 	L "api-webapp/Login"
 	"database/sql"
 	"log"
-	"net/http"
 	"time"
 
 	// M "api-webapp/Member"
@@ -89,7 +88,7 @@ func main() {
 	router.GET("/testenv", P.TestEnvironment)
 	router.GET("/testusetoken", P.TestUseToken)
 	router.POST("/upimage-local", P.TestUploadImageOnLocalHost)
-	router.StaticFS("/public", http.Dir("public"))
+	// router.StaticFS("/public", http.Dir("public"))
 	// router.StaticFS("/assets", http.Dir("assets"))
 
 	//#### Cloud Service ####
@@ -109,16 +108,19 @@ func main() {
 	router.GET("/movie/:name", VIDEO.ServerFileMedia)
 	router.GET("/subtitle/:directory/:filename", VIDEO.ServerURLFileSubtitle)
 	router.GET("/thumbnail/:root/:file", VIDEO.ServerFileThumbnail)
+	router.GET("/image/:file", VIDEO.ServerFilePoster)
 	// router.GET("/media/{mId:[0-9]+}/stream/", VIDEO.StreamHandle)
 
 
 	//####### movies ##########
 	router.POST("/movies",MOVIE.AddMovie)
 	router.GET("/movies",MOVIE.GetAllMovie)
+	router.GET("/movies/recommended",MOVIE.GetRecommendMovieNow)
 	router.POST("/movies-information",MOVIE.CreateInformationMovie)
 	router.GET("/movies-information",MOVIE.GetAllMovieGroup)
 	router.GET("/movies-information/:id",MOVIE.GetOneInformationMovie)
 	router.GET("/movies/:MovieGroupID/episodes-option",MOVIE.GetOptionsSeries)
+
 
 
 	//###### subtitle ########

@@ -103,4 +103,29 @@ func ServerFileThumbnail(c *gin.Context) {
 	c.File(result)
 }
 
+func ServerFilePoster(c *gin.Context){
+	c.Writer.Header().Set("Content-Type", "image/jpeg")
+	bucket := os.Getenv("BUCKET_FILE_URL")
+	filename := c.Param("file")
+	
+	result := fmt.Sprintf("%spublic/%s", bucket, filename)
+
+	// Check if the file exists
+	if _, err := os.Stat(result); os.IsNotExist(err) {
+		c.JSON(http.StatusNotFound, gin.H{"error": "File not found"})
+		return
+	}
+
+	// Check if the file exists
+	if _, err := os.Stat(result); os.IsNotExist(err) {
+		c.JSON(http.StatusNotFound, gin.H{"error": "File not found"})
+		return
+	}
+	
+
+	// Serve the file
+	c.File(result)
+	
+}
+
 //https://github.com/aofiee/Music-Streaming-HLS-Go-fiber/blob/main/main.go

@@ -87,3 +87,18 @@ type ResponseEpisodesOption struct {
 	Season       int32 `json:"season"`
 	EpisodeTotal int   `json:"episode_total"`
 }
+
+
+
+
+type ResponseMovieRecommendNow struct {
+	MovieGroupID  int            `json:"movie_group_id"`
+	NameLocal   string `json:"movie_name_local"`
+	NameEng     string `json:"movie_name_eng"`
+	Description     string `json:"description"`
+	Type        string `json:"movie_type"`
+	MovieQuality string `json:"movie_quality"`
+	MovieTime    string  `json:"movie_time"`
+	PosterURL string `json:"poster_url"`
+	UpdatedAt   *time.Time `json:"updated_at"`
+}

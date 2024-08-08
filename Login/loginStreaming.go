@@ -147,12 +147,13 @@ func VerifyPINStreamingAccount(c *gin.Context) {
 	}
 
 	// 6. create jwt
+	userImageURL := fmt.Sprintf("image/%s",  userOfAccount.ImageURL)
 	jwtOfaccessPINverify, _ := CreateJWTofPIN(responseVerifyPIN{
 		AccountId: userOfAccount.AccountId,
 		UserID:    userOfAccount.UserID,
 		UserIndex: userOfAccount.UserIndex,
 		Username:  userOfAccount.Username,
-		ImageURL:  userOfAccount.ImageURL,
+		ImageURL: userImageURL ,
 		Expire:    checkReneval,
 	})
 
@@ -235,10 +236,10 @@ func ChekHash(password, hash string) bool {
 	return err == nil
 }
 
-func QueryGetRenevalofAccount(account_id int32) bool {
+func QueryGetRenevalofAccount(accountId int32) bool {
 	var RenevalDate checkReneval
-	current_date := time.Now()
-	rows, err := DB.Query("SELECT reneval FROM accounts WHERE account_id=?", account_id)
+	currentDate := time.Now()
+	rows, err := DB.Query("SELECT reneval FROM accounts WHERE account_id=?", accountId)
 	if err != nil {
 		return false
 	}
@@ -275,12 +276,12 @@ func QueryGetRenevalofAccount(account_id int32) bool {
 	// fmt.Println("Expire is",current_date.After(date.Add(time.Hour*720)))
 	// log.Println("TIME NOW :::",current_date.Format("2006-01-02 15:04:05"))
 	// log.Println("RENEVAL CURRENT :::",date)
-	return current_date.After(date.Add(time.Hour * 720))
+	return currentDate.After(date.Add(time.Hour * 720))
 }
 
-func QueryDataAccount(account_id, usr_idx int32) (*userScanTableStruct, error) {
+func QueryDataAccount(accountId, userIndex int32) (*userScanTableStruct, error) {
 	var Users userScanTableStruct
-	rows, err := DB.Query("SELECT * FROM users WHERE account_id=? and usr_idx=?", account_id, usr_idx)
+	rows, err := DB.Query("SELECT * FROM users WHERE account_id=? and usr_idx=?", accountId, userIndex)
 	if err != nil {
 		return nil, err
 	}
@@ -310,10 +311,10 @@ func QueryDataAccount(account_id, usr_idx int32) (*userScanTableStruct, error) {
 	}, nil
 }
 
-func QueryDataAllAccount(account_id int32) ([]myUserStruct, error) {
+func QueryDataAllAccount(accountId int32) ([]myUserStruct, error) {
 	var Users userScanTableStruct
 	var newArray []myUserStruct
-	rows, err := DB.Query("SELECT * FROM users WHERE account_id=?", account_id)
+	rows, err := DB.Query("SELECT * FROM users WHERE account_id=?", accountId)
 	if err != nil {
 		return nil, err
 	}
@@ -331,7 +332,8 @@ func QueryDataAllAccount(account_id int32) ([]myUserStruct, error) {
 		if err != nil {
 			return nil, err
 		}
-		newArray = append(newArray, myUserStruct{UserIndex: Users.UserIndex, Username: Users.Username, ImageURL: Users.ImageURL})
+		userImageURL := fmt.Sprintf("image/%s",  Users.ImageURL)
+		newArray = append(newArray, myUserStruct{UserIndex: Users.UserIndex, Username: Users.Username, ImageURL: userImageURL})
 	}
 	return newArray, nil
 }

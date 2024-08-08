@@ -63,7 +63,10 @@ func createFolder(movie Movie) bool {
 }
 func uploadImage(file multipart.File, header *multipart.FileHeader) (string, error) {
 	filename := header.Filename
-	filepath := path.Join("public", filename)
+	bucket := os.Getenv("BUCKET_FILE_URL")
+	result := fmt.Sprintf("%spublic", bucket)
+	filepath := path.Join(result, filename)
+
 	out, err := os.Create(filepath)
 	if err != nil {
 		log.Printf("Error creating file: %s", err)
@@ -76,11 +79,7 @@ func uploadImage(file multipart.File, header *multipart.FileHeader) (string, err
 		log.Printf("Error copying file: %s", err)
 		return "", err
 	}
-
-	// Construct the full URL dynamically
-	baseURL := "http://localhost:8080" // Change this to your actual base URL
-	fullURL := baseURL + "/" + filepath
-	return fullURL, nil
+	return filename, nil
 }
 
 // this help funtion for refactor code cleanup

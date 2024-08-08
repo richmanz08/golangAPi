@@ -111,4 +111,33 @@ func GetAllMovie(c *gin.Context){
 	c.JSON(http.StatusOK,response)
 }
 
+func GetRecommendMovieNow(c *gin.Context){
+	var movieGroupData MovieGroup
+	if err := DB.Order("updated_at asc").First(&movieGroupData).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to fetch recomend movie"})
+		return
+	}
+
+	var mv Movie
+
+	if err := DB.Where("movie_group_id = ?", movieGroupData.ID).First(&mv) .Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to fetch recomend movie"})
+		return
+	}
+	posterURL := fmt.Sprintf("image/%s",  movieGroupData.PosterPath)
+	response := ResponseMovieRecommendNow{
+		MovieGroupID: int(mv.MovieGroupID),
+		NameLocal: mv.NameLocal,
+		NameEng: mv.NameEng,
+		Description:mv.Description,
+		Type: mv.Type,
+		MovieQuality: mv.QualityType,
+		MovieTime:mv.Duration,
+		PosterURL:posterURL,
+		UpdatedAt: mv.UpdatedAt,
+	}
+
+	c.JSON(http.StatusOK, response)
+}
+
 

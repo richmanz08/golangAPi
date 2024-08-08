@@ -80,9 +80,12 @@ func GetAllMovieGroup(c *gin.Context) {
 			} else {
 				fmt.Println("Error occurred:", queryMovieByGroupID.Error)
 			}
-		} else {
-			fmt.Println("Found ::", MovieRowItem.NameEng, "Season:", MovieRowItem.Season)
-		}
+		} 
+		// else {
+		// 	fmt.Println("Found ::", MovieRowItem.NameEng, "Season:", MovieRowItem.Season)
+		// }
+
+		posterPathURL := fmt.Sprintf("image/%s",  movie.PosterPath)
 
 		simplifiedMovie := ResponseMovieGroup{
 			ID:           movie.ID,
@@ -90,7 +93,7 @@ func GetAllMovieGroup(c *gin.Context) {
 			NameEng:      movie.NameEng,
 			Type:         movie.Type,
 			Status:       movie.Status,
-			PosterPath:   movie.PosterPath,
+			PosterPath:   posterPathURL,
 			Description:  movie.Description,
 			CreatedAt:    movie.CreatedAt,
 			UpdatedAt:    movie.UpdatedAt,
