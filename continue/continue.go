@@ -3,6 +3,7 @@ package continueplay
 import (
 	AUTH "api-webapp/Login"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -81,4 +82,25 @@ func CreateMyContinuePlay(c *gin.Context) {
 
 	
 
+}
+
+func RemoveMyContinuePlay(c *gin.Context) {
+	// Parse ID from URL parameters
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		return
+	}
+
+
+
+	// Delete the record by ID
+	if err := DB.Delete(&ContinuePlay{}, id).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete record"})
+		return
+	}
+
+	// Send success response
+	c.JSON(http.StatusOK, gin.H{"message": "Record deleted successfully"})
 }
